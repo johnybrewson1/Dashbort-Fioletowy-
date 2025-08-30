@@ -1,0 +1,158 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* $10,000 Social Agent Design System - Modern, Premium, Engaging */
+
+@layer base {
+  :root {
+    /* Core Background & Surfaces */
+    --background: 220 25% 6%;
+    --foreground: 210 40% 98%;
+    --surface: 220 20% 8%;
+    
+    /* Form Container - Dark Charcoal */
+    --form-container: 220 15% 12%; 
+    --form-container-border: 280 30% 25%;
+    
+    /* Cards & Popovers */
+    --card: 220 15% 12%;
+    --card-foreground: 210 40% 98%;
+    --popover: 220 15% 12%;
+    --popover-foreground: 210 40% 98%;
+
+    /* Premium Purple Primary */
+    --primary: 280 100% 65%;
+    --primary-foreground: 0 0% 100%;
+    --primary-glow: 280 100% 75%;
+
+    /* Secondary Electric Blue */
+    --secondary: 240 100% 70%;
+    --secondary-foreground: 0 0% 100%;
+
+    /* Muted States */
+    --muted: 220 15% 20%;
+    --muted-foreground: 215 20% 65%;
+
+    /* Vibrant Accent - Pink */
+    --accent: 320 100% 70%;
+    --accent-foreground: 0 0% 100%;
+
+    /* Form Inputs - White */
+    --input-bg: 0 0% 100%;
+    --input-text: 220 15% 15%;
+    --input-border: 220 15% 85%;
+
+    /* Interactive States */
+    --destructive: 0 84% 60%;
+    --destructive-foreground: 210 40% 98%;
+    --border: 220 15% 20%;
+    --input: 220 15% 20%;
+    --ring: 280 100% 65%;
+
+    /* Design System Gradients */
+    --gradient-primary: linear-gradient(135deg, hsl(280 100% 65%), hsl(320 100% 70%));
+    --gradient-secondary: linear-gradient(135deg, hsl(240 100% 70%), hsl(280 100% 65%));
+    --gradient-background: linear-gradient(135deg, hsl(220 25% 6%), hsl(220 20% 8%));
+    --gradient-instagram: linear-gradient(45deg, hsl(280 100% 65%), hsl(320 100% 70%), hsl(25 100% 60%));
+    
+    /* Shadows & Effects */
+    --shadow-glow: 0 0 40px hsl(280 100% 65% / 0.3);
+    --shadow-platform: 0 8px 32px hsl(280 100% 65% / 0.15);
+    --shadow-form: 0 20px 60px hsl(220 25% 6% / 0.8);
+
+    /* Animations */
+    --transition-smooth: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    --transition-bounce: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+
+    --radius: 0.75rem;
+
+    --sidebar-background: 0 0% 98%;
+
+    --sidebar-foreground: 240 5.3% 26.1%;
+
+    --sidebar-primary: 240 5.9% 10%;
+
+    --sidebar-primary-foreground: 0 0% 98%;
+
+    --sidebar-accent: 240 4.8% 95.9%;
+
+    --sidebar-accent-foreground: 240 5.9% 10%;
+
+    --sidebar-border: 220 13% 91%;
+
+    --sidebar-ring: 217.2 91.2% 59.8%;
+  }
+
+  /* Dark mode inherits the same premium aesthetic */
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply bg-background text-foreground font-poppins antialiased;
+    background: var(--gradient-background);
+    min-height: 100vh;
+  }
+}
+
+/* Custom Component Styles */
+@layer components {
+  .form-container {
+    @apply bg-card border border-form-container-border backdrop-blur-sm;
+    background: hsl(var(--form-container) / 0.95);
+    box-shadow: var(--shadow-form);
+  }
+  
+  .input-field {
+    @apply bg-input-bg text-input-text border-input-border;
+    background: hsl(var(--input-bg));
+    color: hsl(var(--input-text));
+    border-color: hsl(var(--input-border));
+  }
+  
+  .platform-selected {
+    @apply bg-primary text-primary-foreground;
+    background: var(--gradient-primary);
+    box-shadow: var(--shadow-platform);
+  }
+  
+  .magic-button {
+    @apply bg-primary text-primary-foreground font-bold text-lg;
+    background: var(--gradient-primary);
+    box-shadow: var(--shadow-glow);
+    transition: var(--transition-bounce);
+  }
+  
+  .magic-button:hover {
+    transform: translateY(-2px) scale(1.02);
+    box-shadow: 0 0 60px hsl(280 100% 65% / 0.5);
+  }
+  
+  .floating-background {
+    background: var(--gradient-background);
+    overflow: hidden;
+  }
+  
+  /* Animations */
+  .animate-float {
+    animation: float 6s ease-in-out infinite;
+  }
+  
+  .animate-glow {
+    animation: glow 3s ease-in-out infinite alternate;
+  }
+  
+  @keyframes float {
+    0%, 100% { transform: translateY(0px) rotate(0deg); }
+    50% { transform: translateY(-20px) rotate(180deg); }
+  }
+  
+  @keyframes glow {
+    0% { box-shadow: 0 0 20px hsl(280 100% 65% / 0.2); }
+    100% { box-shadow: 0 0 40px hsl(280 100% 65% / 0.6); }
+  }
+}
