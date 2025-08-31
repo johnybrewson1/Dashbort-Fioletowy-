@@ -1,73 +1,156 @@
-# Welcome to your Lovable project
+# 🚀 Dream Post Forge
 
-## Project info
+**AI-powered social media content creation tool** that transforms your ideas into viral posts across multiple platforms.
 
-**URL**: https://lovable.dev/projects/c4dc2faa-d265-4813-8670-d8a14d0ebd5d
+[![Netlify Status](https://api.netlify.com/api/v1/badges/68b31e30230743e0feff0ce1/deploy-status)](https://app.netlify.com/sites/dream-post-forge/deploys)
 
-## How can I edit this code?
+## ✨ Features
 
-There are several ways of editing your application.
+### 🎯 **Multi-Platform Content Creation**
+- **Instagram** - Posts, Captions, Videos
+- **TikTok** - Video content
+- **YouTube** - Hooks, Scripts, Captions, **Thumbnail support**
+- **LinkedIn** - Professional content
+- **X (Twitter)** - Engaging posts
+- **Facebook** - Social media content
+- **Blog** - Long-form articles
 
-**Use Lovable**
+### 🤖 **AI-Powered Generation**
+- **Magic Agent** - Create content from scratch
+- **YouTube Integration** - Generate content from videos
+- **Ranking Analysis** - Create content from trending topics
+- **Smart Thumbnails** - Auto-generate from YouTube URLs
 
-Simply visit the [Lovable Project](https://lovable.dev/projects/c4dc2faa-d265-4813-8670-d8a14d0ebd5d) and start prompting.
+### 🎨 **Advanced Customization**
+- **Voice & Style** settings
+- **Platform-specific** content types
+- **Thumbnail integration** for YouTube
+- **Custom guidelines** and instructions
 
-Changes made via Lovable will be committed automatically to this repo.
+## 🚀 Live Demo
 
-**Use your preferred IDE**
+**🌐 [https://dream-post-forge.netlify.app](https://dream-post-forge.netlify.app)**
 
-If you want to work locally using your own IDE, you can clone this repo and push changes. Pushed changes will also be reflected in Lovable.
+## 🛠️ Tech Stack
 
-The only requirement is having Node.js & npm installed - [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating)
+- **Frontend:** React 18 + TypeScript + Vite
+- **UI Components:** shadcn/ui + Tailwind CSS
+- **Backend:** Supabase (Database + Auth)
+- **Deployment:** Netlify
+- **State Management:** React Hooks + Context
+- **Styling:** Tailwind CSS + CSS Modules
 
-Follow these steps:
+## 📦 Installation
 
-```sh
-# Step 1: Clone the repository using the project's Git URL.
-git clone <YOUR_GIT_URL>
+### Prerequisites
+- Node.js 18+ 
+- npm or yarn
 
-# Step 2: Navigate to the project directory.
-cd <YOUR_PROJECT_NAME>
+### Setup
+```bash
+# Clone the repository
+git clone https://github.com/YOUR_USERNAME/dream-post-forge.git
+cd dream-post-forge
 
-# Step 3: Install the necessary dependencies.
-npm i
+# Install dependencies
+npm install --legacy-peer-deps
 
-# Step 4: Start the development server with auto-reloading and an instant preview.
+# Start development server
 npm run dev
+
+# Build for production
+npm run build
 ```
 
-**Edit a file directly in GitHub**
+## 🔧 Configuration
 
-- Navigate to the desired file(s).
-- Click the "Edit" button (pencil icon) at the top right of the file view.
-- Make your changes and commit the changes.
+### Environment Variables
+Create a `.env` file in the root directory:
 
-**Use GitHub Codespaces**
+```env
+VITE_SUPABASE_URL=your_supabase_url
+VITE_SUPABASE_ANON_KEY=your_supabase_anon_key
+```
 
-- Navigate to the main page of your repository.
-- Click on the "Code" button (green button) near the top right.
-- Select the "Codespaces" tab.
-- Click on "New codespace" to launch a new Codespace environment.
-- Edit files directly within the Codespace and commit and push your changes once you're done.
+### Supabase Setup
+1. Create a new Supabase project
+2. Set up your database tables
+3. Configure authentication
+4. Add your credentials to `.env`
 
-## What technologies are used for this project?
+## 📱 Usage
 
-This project is built with:
+### 1. **Magic Agent**
+- Write your content idea
+- Select target platforms
+- Generate AI-powered posts
 
-- Vite
-- TypeScript
-- React
-- shadcn-ui
-- Tailwind CSS
+### 2. **YouTube Integration**
+- Paste YouTube URL
+- Choose content type (including Thumbnail)
+- Generate platform-specific content
 
-## How can I deploy this project?
+### 3. **Ranking Analysis**
+- Select trending topics
+- Use thumbnail integration
+- Create viral content
 
-Simply open [Lovable](https://lovable.dev/projects/c4dc2faa-d265-4813-8670-d8a14d0ebd5d) and click on Share -> Publish.
+## 🏗️ Project Structure
 
-## Can I connect a custom domain to my Lovable project?
+```
+dream-post-forge/
+├── src/
+│   ├── components/          # React components
+│   │   ├── modals/         # Modal dialogs
+│   │   ├── sections/       # Main page sections
+│   │   └── ui/            # Reusable UI components
+│   ├── hooks/              # Custom React hooks
+│   ├── integrations/       # External service integrations
+│   ├── lib/               # Utility functions
+│   └── pages/             # Page components
+├── public/                 # Static assets
+├── supabase/              # Database migrations
+└── netlify.toml          # Netlify configuration
+```
 
-Yes, you can!
+## 🚀 Deployment
 
-To connect a domain, navigate to Project > Settings > Domains and click Connect Domain.
+### Netlify (Recommended)
+1. Connect your GitHub repository
+2. Build command: `npm run build`
+3. Publish directory: `dist`
+4. Deploy automatically on push
 
-Read more here: [Setting up a custom domain](https://docs.lovable.dev/tips-tricks/custom-domain#step-by-step-guide)
+### Manual Deployment
+```bash
+npm run build
+# Upload dist/ folder to your hosting provider
+```
+
+## 🤝 Contributing
+
+1. Fork the repository
+2. Create your feature branch (`git checkout -b feature/AmazingFeature`)
+3. Commit your changes (`git commit -m 'Add some AmazingFeature'`)
+4. Push to the branch (`git push origin feature/AmazingFeature`)
+5. Open a Pull Request
+
+## 📄 License
+
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+
+## 🙏 Acknowledgments
+
+- **shadcn/ui** for beautiful components
+- **Tailwind CSS** for styling
+- **Supabase** for backend services
+- **Netlify** for hosting
+
+## 📞 Support
+
+- **Issues:** [GitHub Issues](https://github.com/YOUR_USERNAME/dream-post-forge/issues)
+- **Discussions:** [GitHub Discussions](https://github.com/YOUR_USERNAME/dream-post-forge/discussions)
+
+---
+
+**⭐ Star this repository if you found it helpful!**
