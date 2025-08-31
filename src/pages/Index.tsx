@@ -65,6 +65,18 @@ const Index = () => {
                 Zaloguj się do Dashboard
               </Button>
             </Link>
+            <div className="flex space-x-4 justify-center">
+              <Link to="/dashboard">
+                <Button variant="outline" className="py-3 px-6">
+                  Airtable Dashboard
+                </Button>
+              </Link>
+              <Link to="/supabase-dashboard">
+                <Button variant="outline" className="py-3 px-6">
+                  Supabase Dashboard
+                </Button>
+              </Link>
+            </div>
           </div>
         </div>
       </div>
