@@ -79,29 +79,44 @@ export const RankingsSection: React.FC = () => {
             ) : (
               rankings.map((ranking) => (
                 <div key={ranking.id} className="flex items-center justify-between p-4 border border-form-container-border rounded-lg bg-card/50 hover:bg-card/80 transition-all duration-200">
-                  <div className="flex-1">
-                    <h4 className="font-medium text-foreground">{ranking.title}</h4>
-                    <p className="text-sm text-muted-foreground line-clamp-2 mt-1">
-                      Ratio: {ranking.ratio}% 
-                      {ranking.thumbnailUrl && (
-                        <a 
-                          href={ranking.videoUrl} 
-                          target="_blank" 
-                          rel="noopener noreferrer"
-                          className="ml-2 text-primary hover:underline inline-flex items-center space-x-1"
-                        >
-                          <ExternalLink className="w-3 h-3" />
-                          <span>Zobacz film</span>
-                        </a>
+                  <div className="flex items-start space-x-4 flex-1">
+                    <div className="flex-shrink-0">
+                      {ranking.thumbnailUrl ? (
+                        <img 
+                          src={ranking.thumbnailUrl} 
+                          alt={`Thumbnail for ${ranking.title}`}
+                          className="w-20 h-20 object-cover rounded-lg border border-form-container-border shadow-sm"
+                        />
+                      ) : (
+                        <div className="w-20 h-20 bg-gradient-to-br from-purple-100 to-pink-100 border border-form-container-border rounded-lg flex items-center justify-center">
+                          <TrendingUp className="w-8 h-8 text-purple-400" />
+                        </div>
                       )}
-                    </p>
-                    <div className="flex items-center space-x-2 mt-2">
-                      <Badge variant={ranking.shouldCreateContent ? "default" : "secondary"} className="platform-selected">
-                        {ranking.shouldCreateContent ? 'Gotowy do użycia' : 'W analizie'}
-                      </Badge>
-                      <span className="text-xs text-muted-foreground">
-                        {new Date(ranking.createdAt).toLocaleDateString('pl-PL')}
-                      </span>
+                    </div>
+                    <div className="flex-1">
+                      <h4 className="font-medium text-foreground">{ranking.title}</h4>
+                      <p className="text-sm text-muted-foreground line-clamp-2 mt-1">
+                        Ratio: {ranking.ratio}% 
+                        {ranking.thumbnailUrl && (
+                          <a 
+                            href={ranking.videoUrl} 
+                            target="_blank" 
+                            rel="noopener noreferrer"
+                            className="ml-2 text-primary hover:underline inline-flex items-center space-x-1"
+                          >
+                            <ExternalLink className="w-3 h-3" />
+                            <span>Zobacz film</span>
+                          </a>
+                        )}
+                      </p>
+                      <div className="flex items-center space-x-2 mt-2">
+                        <Badge variant={ranking.shouldCreateContent ? "default" : "secondary"} className="platform-selected">
+                          {ranking.shouldCreateContent ? 'Gotowy do użycia' : 'W analizie'}
+                        </Badge>
+                        <span className="text-xs text-muted-foreground">
+                          {new Date(ranking.createdAt).toLocaleDateString('pl-PL')}
+                        </span>
+                      </div>
                     </div>
                   </div>
                   

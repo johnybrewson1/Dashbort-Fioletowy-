@@ -32,6 +32,8 @@ interface PlatformMultiSelectProps {
   onImageUrlChange: (url: string) => void;
   blogPurpose?: string;
   onBlogPurposeChange?: (purpose: string) => void;
+  useThumbnail?: boolean;
+  onUseThumbnailChange?: (useThumbnail: boolean) => void;
 }
 
 const PlatformMultiSelect: React.FC<PlatformMultiSelectProps> = ({
@@ -42,7 +44,9 @@ const PlatformMultiSelect: React.FC<PlatformMultiSelectProps> = ({
   imageUrl,
   onImageUrlChange,
   blogPurpose,
-  onBlogPurposeChange
+  onBlogPurposeChange,
+  useThumbnail,
+  onUseThumbnailChange
 }) => {
   const platforms = [
     { key: 'instagram', name: 'Instagram 📷', icon: Instagram },
@@ -57,10 +61,10 @@ const PlatformMultiSelect: React.FC<PlatformMultiSelectProps> = ({
   const contentTypeOptions = {
     instagram: ['Post', 'Captions', 'Filmy'],
     tiktok: ['Filmy'],
-    youtube: ['Haczyki', 'Krótki skrypt', 'Średni skrypt', 'Captions', 'Filmy'],
-    linkedin: ['Text', 'Text + Image', 'Filmy'],
-    x: ['Text', 'Text + Image', 'Filmy'],
-    facebook: ['Text', 'Text + Image', 'Filmy'],
+    youtube: ['Haczyki', 'Krótki skrypt', 'Średni skrypt', 'Captions', 'Thumbnail'],
+    linkedin: [],
+    x: [],
+    facebook: [],
     blog: []
   };
 
@@ -84,6 +88,12 @@ const PlatformMultiSelect: React.FC<PlatformMultiSelectProps> = ({
       : [...currentTypes, contentType];
     
     onContentTypeChange(platform, newTypes);
+    
+    // Auto-set useThumbnail when YouTube Thumbnail is selected/deselected
+    if (platform === 'youtube' && contentType === 'Thumbnail') {
+      const isThumbnailSelected = newTypes.includes('Thumbnail');
+      onUseThumbnailChange?.(isThumbnailSelected);
+    }
   };
 
   const shouldShowImageUrl = () => {

@@ -164,13 +164,18 @@ export const PostsSection: React.FC = () => {
                   <div className="p-3">
                     <h4 className="font-medium text-foreground mb-2 line-clamp-1">{post.title}</h4>
                     
-                    {post.image && (
-                      <div className="mb-3">
+                    {post.image ? (
+                      <div className="mb-3 relative">
                         <img 
                           src={post.image} 
-                          alt="Post" 
-                          className="w-full h-32 object-cover rounded border border-form-container-border"
+                          alt={`Thumbnail for ${post.title}`}
+                          className="w-full h-32 object-cover rounded-lg border border-form-container-border shadow-sm hover:shadow-md transition-shadow duration-200"
                         />
+                        <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent rounded-lg opacity-0 group-hover:opacity-100 transition-opacity duration-200" />
+                      </div>
+                    ) : (
+                      <div className="mb-3 h-32 bg-gradient-to-br from-blue-100 to-cyan-100 border border-form-container-border rounded-lg flex items-center justify-center">
+                        <Sparkles className="w-12 h-12 text-blue-400 opacity-60" />
                       </div>
                     )}
                     

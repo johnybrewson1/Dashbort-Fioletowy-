@@ -23,6 +23,8 @@ export const CreateFromRankingModal: React.FC<CreateFromRankingModalProps> = ({ 
     selectedContentTypes,
     imageUrl,
     setImageUrl,
+    useThumbnail,
+    setUseThumbnail,
     loading,
     handleContentTypeChange,
     handlePlatformChange,
@@ -61,6 +63,9 @@ export const CreateFromRankingModal: React.FC<CreateFromRankingModalProps> = ({ 
         rankingTitle: ranking?.title,
         rankingRatio: ranking?.ratio,
         rankingVideoUrl: ranking?.videoUrl,
+        // Thumbnail data
+        useThumbnail,
+        thumbnailUrl: useThumbnail ? ranking?.thumbnailUrl : undefined,
         // Additional webhook data as requested
         voiceForPosts: settings.voiceForPosts,
         voiceForScripts: settings.voiceForScripts,
@@ -111,7 +116,7 @@ export const CreateFromRankingModal: React.FC<CreateFromRankingModalProps> = ({ 
         </DialogHeader>
 
         <div className="space-y-6">
-          <MagicContentInput value={content} onChange={setContent} />
+          <MagicContentInput value={content} onChange={setContent} variant="ranking" />
           
           <PlatformMultiSelect
             selectedPlatforms={selectedPlatforms}
@@ -120,6 +125,8 @@ export const CreateFromRankingModal: React.FC<CreateFromRankingModalProps> = ({ 
             onContentTypeChange={handleContentTypeChange}
             imageUrl={imageUrl}
             onImageUrlChange={setImageUrl}
+            useThumbnail={useThumbnail}
+            onUseThumbnailChange={setUseThumbnail}
           />
           
           <MagicButton onClick={handleSubmit} loading={loading} />

@@ -32,10 +32,25 @@ export const CreateModal: React.FC<CreateModalProps> = ({ isOpen, onClose }) => 
     x: [] as string[],
     blog: [] as string[],
   });
+  const [useThumbnail, setUseThumbnail] = useState(false);
   const [loading, setLoading] = useState(false);
   
   // State for YouTubeTab
   const [youtubeUrl, setYoutubeUrl] = useState('');
+
+  // Function to generate YouTube thumbnail URL
+  const generateYouTubeThumbnailUrl = (youtubeUrl: string): string => {
+    try {
+      const videoId = youtubeUrl.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/)([^&\n?#]+)/)?.[1];
+      if (videoId) {
+        return `https://img.youtube.com/vi/${videoId}/maxresdefault.jpg`;
+      }
+      return '';
+    } catch (error) {
+      console.error('Error generating YouTube thumbnail URL:', error);
+      return '';
+    }
+  };
 
   const handlePlatformChange = (platform: string, checked: boolean) => {
     setSelectedPlatforms(prev => ({
@@ -77,6 +92,8 @@ export const CreateModal: React.FC<CreateModalProps> = ({ isOpen, onClose }) => 
           guidelines: data.guidelines,
           platforms: selectedPlatforms,
           contentTypes: selectedContentTypes,
+          useThumbnail,
+          thumbnailUrl: useThumbnail ? generateYouTubeThumbnailUrl(data.youtubeUrl) : undefined,
           voiceForPosts: settings.voiceForPosts,
           voiceForScripts: settings.voiceForScripts, 
           style: settings.style,
@@ -127,6 +144,8 @@ export const CreateModal: React.FC<CreateModalProps> = ({ isOpen, onClose }) => 
               onPlatformChange={handlePlatformChange}
               selectedContentTypes={selectedContentTypes}
               onContentTypeChange={handleContentTypeChange}
+              useThumbnail={useThumbnail}
+              onUseThumbnailChange={setUseThumbnail}
               loading={loading}
               onSubmit={handleYouTubeSubmit}
             />

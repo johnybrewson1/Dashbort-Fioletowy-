@@ -45,6 +45,7 @@ export const useMagicAgent = () => {
   });
   const [imageUrl, setImageUrl] = useState('');
   const [blogPurpose, setBlogPurpose] = useState('');
+  const [useThumbnail, setUseThumbnail] = useState(false);
   const [loading, setLoading] = useState(false);
 
   const handleContentTypeChange = (platform: keyof ContentTypes, types: string[]) => {
@@ -56,6 +57,11 @@ export const useMagicAgent = () => {
 
   const handlePlatformChange = (platforms: PlatformSelection) => {
     setSelectedPlatforms(platforms);
+    
+    // Reset thumbnail option when YouTube is deselected
+    if (!platforms.youtube) {
+      setUseThumbnail(false);
+    }
   };
 
   const buildWebhookPayload = () => {
@@ -66,6 +72,7 @@ export const useMagicAgent = () => {
       blogPurpose,
       platforms: selectedPlatforms,
       contentTypes: selectedContentTypes,
+      useThumbnail,
       voiceForPosts: settings.voiceForPosts,
       voiceForScripts: settings.voiceForScripts, 
       style: settings.style,
@@ -160,6 +167,8 @@ export const useMagicAgent = () => {
     setImageUrl,
     blogPurpose,
     setBlogPurpose,
+    useThumbnail,
+    setUseThumbnail,
     loading,
     handleContentTypeChange,
     handlePlatformChange,

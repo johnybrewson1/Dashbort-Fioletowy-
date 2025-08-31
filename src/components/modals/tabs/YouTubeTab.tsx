@@ -27,6 +27,8 @@ interface YouTubeTabProps {
     blog: string[];
   };
   onContentTypeChange: (platform: string, types: string[]) => void;
+  useThumbnail?: boolean;
+  onUseThumbnailChange?: (useThumbnail: boolean) => void;
   loading: boolean;
   onSubmit: (data: { youtubeUrl: string; guidelines: string }) => void;
 }
@@ -38,6 +40,8 @@ export const YouTubeTab: React.FC<YouTubeTabProps> = ({
   onPlatformChange,
   selectedContentTypes,
   onContentTypeChange,
+  useThumbnail,
+  onUseThumbnailChange,
   loading,
   onSubmit
 }) => {
@@ -54,7 +58,7 @@ export const YouTubeTab: React.FC<YouTubeTabProps> = ({
 
   const contentTypeOptions = {
     instagram: ['Post', 'Captions'],
-    youtube: ['Haczyki', 'Krótki skrypt', 'Średni skrypt', 'Captions'],
+    youtube: ['Haczyki', 'Krótki skrypt', 'Średni skrypt', 'Captions', 'Thumbnail'],
     blog: []
   };
 
@@ -68,6 +72,12 @@ export const YouTubeTab: React.FC<YouTubeTabProps> = ({
       ? currentTypes.filter(t => t !== type)
       : [...currentTypes, type];
     onContentTypeChange(platform, newTypes);
+    
+    // Auto-set useThumbnail when YouTube Thumbnail is selected/deselected
+    if (platform === 'youtube' && type === 'Thumbnail') {
+      const isThumbnailSelected = newTypes.includes('Thumbnail');
+      onUseThumbnailChange?.(isThumbnailSelected);
+    }
   };
 
   return (
@@ -88,11 +98,15 @@ export const YouTubeTab: React.FC<YouTubeTabProps> = ({
 
       <div className="space-y-2">
         <Label htmlFor="guidelines" className="text-lg font-semibold text-foreground mb-3 block">
-          Dodatkowe wytyczne
+          Dodatkowe instrukcje
         </Label>
         <Textarea
           id="guidelines"
-          placeholder="Wpisz dodatkowe wytyczne dla generowania treści..."
+          placeholder="📝 Opisz swój cel - jaki typ treści chcesz stworzyć
+💡 Dodaj kontekst - dla kogo, w jakim stylu, na jaką platformę
+🎯 Wpisz konkretne wymagania lub preferencje
+🔗 Dodaj linki do podobnych treści jako inspirację
+📱 Określ ton i charakter posta"
           value={guidelines}
           onChange={(e) => setGuidelines(e.target.value)}
           className="input-field text-lg p-4 min-h-[100px] resize-none text-white placeholder:text-gray-400"
