@@ -104,7 +104,7 @@ export const SupabaseScriptsSection: React.FC = () => {
                 <p>Brak skryptów. Stwórz pierwszy skrypt!</p>
               </div>
             ) : (
-              filteredScripts.map((script) => (
+              scripts.map((script) => (
                 <div 
                   key={script.id} 
                   className="group relative bg-card/50 border border-form-container-border rounded-lg hover:bg-card/80 hover:border-primary/30 hover:shadow-lg hover:shadow-primary/10 transition-all duration-300 cursor-pointer transform hover:scale-[1.02]"

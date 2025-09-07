@@ -92,19 +92,19 @@ export const SupabaseScriptsSection: React.FC = () => {
             </div>
             <span className="text-foreground">Skrypty</span>
             <Badge variant="secondary" className="bg-accent/10 text-accent border-accent/20">
-              {filteredScripts.length}
+              {scripts.length}
             </Badge>
           </CardTitle>
         </CardHeader>
         <CardContent>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {filteredScripts.length === 0 ? (
+            {scripts.length === 0 ? (
               <div className="col-span-full text-center py-8 text-muted-foreground">
                 <Code className="w-12 h-12 mx-auto mb-4 opacity-50" />
                 <p>Brak skryptów. Stwórz pierwszy skrypt!</p>
               </div>
             ) : (
-              filteredScripts.map((script) => (
+              scripts.map((script) => (
                 <div 
                   key={script.id} 
                   className="group relative bg-card/50 border border-form-container-border rounded-lg hover:bg-card/80 hover:border-primary/30 hover:shadow-lg hover:shadow-primary/10 transition-all duration-300 cursor-pointer transform hover:scale-[1.02]"
