@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Header } from '@/components/layout/Header';
 import { Sidebar } from '@/components/layout/Sidebar';
 import { SupabasePostsSection } from '@/components/sections/SupabasePostsSection';
+import { SupabaseScriptsSection } from '@/components/sections/SupabaseScriptsSection';
 import { SupabaseStatsCards } from '@/components/sections/SupabaseStatsCards';
 import { SupabaseSettingsSection } from '@/components/SupabaseSettingsSection';
 import { CreateModal } from '@/components/modals/CreateModal';
@@ -18,6 +19,8 @@ const SupabaseDashboard = () => {
     switch (activeSection) {
       case 'posts':
         return <SupabasePostsSection />;
+      case 'scripts':
+        return <SupabaseScriptsSection />;
       case 'settings':
         return <SupabaseSettingsSection />;
       default: // dashboard

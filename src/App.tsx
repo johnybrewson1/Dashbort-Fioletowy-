@@ -23,12 +23,12 @@ const App = () => (
           <Route path="/auth" element={<Auth />} />
           <Route path="/dashboard" element={
             <ProtectedRoute>
-              <Dashboard />
+              <SupabaseDashboard />
             </ProtectedRoute>
           } />
-          <Route path="/supabase-dashboard" element={
+          <Route path="/legacy-dashboard" element={
             <ProtectedRoute>
-              <SupabaseDashboard />
+              <Dashboard />
             </ProtectedRoute>
           } />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}

@@ -4,11 +4,13 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Edit, RefreshCw, Trash2, Sparkles } from 'lucide-react';
 import { useSupabasePosts } from '@/hooks/useSupabaseData';
+import { EditPostModal } from '@/components/modals/EditPostModal';
 import { toast } from '@/components/ui/use-toast';
 
 export const SupabasePostsSection: React.FC = () => {
   const { posts, loading, error, deletePost, updatePost } = useSupabasePosts();
   const [selectedPost, setSelectedPost] = useState(null);
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
 
   const handleDelete = async (postId: string) => {
     try {
@@ -21,6 +23,29 @@ export const SupabasePostsSection: React.FC = () => {
       toast({
         title: "Błąd",
         description: "Nie udało się usunąć postu",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const handleEdit = (post: any) => {
+    setSelectedPost(post);
+    setIsEditModalOpen(true);
+  };
+
+  const handleSave = async (updatedPost: any) => {
+    try {
+      await updatePost(updatedPost.id, updatedPost);
+      toast({
+        title: "Sukces",
+        description: "Post został zaktualizowany",
+      });
+      setIsEditModalOpen(false);
+      setSelectedPost(null);
+    } catch (error) {
+      toast({
+        title: "Błąd",
+        description: "Nie udało się zaktualizować postu",
         variant: "destructive",
       });
     }
@@ -174,6 +199,16 @@ export const SupabasePostsSection: React.FC = () => {
           )}
         </div>
       </CardContent>
+
+      <EditPostModal
+        post={selectedPost}
+        isOpen={isEditModalOpen}
+        onClose={() => {
+          setIsEditModalOpen(false);
+          setSelectedPost(null);
+        }}
+        onSave={handleSave}
+      />
     </Card>
   );
 };

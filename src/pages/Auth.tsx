@@ -14,15 +14,37 @@ const Auth = () => {
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
 
+  // Test connection to Supabase
+  const testConnection = async () => {
+    try {
+      const { data, error } = await supabase.from('_supabase_migrations').select('*').limit(1);
+      console.log('Supabase connection test:', { data, error });
+      return !error;
+    } catch (error) {
+      console.error('Supabase connection failed:', error);
+      return false;
+    }
+  };
+
+  React.useEffect(() => {
+    testConnection();
+  }, []);
+
   const handleSignIn = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
     
+    console.log('Attempting login with:', { email, password: '***' });
+    console.log('Supabase URL:', supabase.supabaseUrl);
+    console.log('Supabase Key:', supabase.supabaseKey?.substring(0, 20) + '...');
+    
     try {
-      const { error } = await supabase.auth.signInWithPassword({
+      const { data, error } = await supabase.auth.signInWithPassword({
         email,
         password,
       });
+      
+      console.log('Login response:', { data, error });
       
       if (error) {
         toast({
@@ -31,10 +53,19 @@ const Auth = () => {
           variant: "destructive",
         });
       } else {
+        toast({
+          title: "Sukces",
+          description: "Zalogowano pomyślnie!",
+        });
         navigate('/dashboard');
       }
     } catch (error) {
-      console.error('Error:', error);
+      console.error('Login error:', error);
+      toast({
+        title: "Błąd logowania",
+        description: error instanceof Error ? error.message : "Failed to fetch",
+        variant: "destructive",
+      });
     } finally {
       setLoading(false);
     }
@@ -64,6 +95,11 @@ const Auth = () => {
       }
     } catch (error) {
       console.error('Error:', error);
+      toast({
+        title: "Błąd rejestracji",
+        description: error instanceof Error ? error.message : "Failed to fetch",
+        variant: "destructive",
+      });
     } finally {
       setLoading(false);
     }

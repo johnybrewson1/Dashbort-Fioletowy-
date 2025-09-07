@@ -53,13 +53,18 @@ export const airtableService = {
   // Posts
   async getPosts(): Promise<Post[]> {
     try {
+      console.log('Fetching posts from Airtable...');
       const records = await base('POSTY').select({
         maxRecords: 100
       }).all();
 
+      console.log('Raw records:', records);
+
       return records.map(record => {
         const imageAttachments = record.get('Image') as any[];
         const imageUrl = imageAttachments && imageAttachments.length > 0 ? imageAttachments[0].url : '';
+        
+        console.log('Record image data:', { imageAttachments, imageUrl });
         
         return {
           id: record.id,
@@ -148,15 +153,28 @@ export const airtableService = {
         maxRecords: 100
       }).all();
 
-      return records.map(record => ({
-        id: record.id,
-        title: record.get('Title') as string || '',
-        ratio: record.get('Ratio') as number || 0,
-        videoUrl: record.get('Video URL') as string || '',
-        thumbnailUrl: record.get('Thumbnail URL') as string || '',
-        shouldCreateContent: record.get('Stwórz Kontent') as boolean || false,
-        createdAt: record.get('Created') as string || record.get('createdTime') as string || new Date().toISOString()
-      }));
+      const getYouTubeId = (url: string): string => {
+        if (!url) return '';
+        const match = url.match(/(?:v=|\.be\/)\s*([\w-]{11})/);
+        return match ? match[1] : '';
+      };
+
+      return records.map(record => {
+        const videoUrl = (record.get('Video URL') as string) || '';
+        const providedThumb = (record.get('Thumbnail URL') as string) || '';
+        const videoId = getYouTubeId(videoUrl);
+        const fallbackThumb = videoId ? `https://img.youtube.com/vi/${videoId}/maxresdefault.jpg` : '';
+
+        return {
+          id: record.id,
+          title: (record.get('Title') as string) || '',
+          ratio: (record.get('Ratio') as number) || 0,
+          videoUrl,
+          thumbnailUrl: providedThumb || fallbackThumb,
+          shouldCreateContent: (record.get('Stwórz Kontent') as boolean) || false,
+          createdAt: (record.get('Created') as string) || (record.get('createdTime') as string) || new Date().toISOString()
+        };
+      });
     } catch (error) {
       console.error('Error fetching rankings:', error);
       return [];

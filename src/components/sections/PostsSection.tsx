@@ -22,7 +22,9 @@ export const PostsSection: React.FC = () => {
 
   const loadPosts = async () => {
     try {
+      console.log('Loading posts from Airtable...');
       const postsData = await airtableService.getPosts();
+      console.log('Posts loaded:', postsData);
       setPosts(postsData);
     } catch (error) {
       console.error('Error loading posts:', error);
