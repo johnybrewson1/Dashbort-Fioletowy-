@@ -370,25 +370,12 @@ export const EditPostModal: React.FC<EditPostModalProps> = ({ post, isOpen, onCl
 
       {/* Image Lightbox Modal */}
       <Dialog open={imageModalOpen} onOpenChange={setImageModalOpen}>
-        <DialogContent className="max-w-6xl max-h-[95vh] p-0 bg-black/95 border-none">
-          <div className="relative">
-            <img 
-              src={imageUrl} 
-              alt="Enlarged post image" 
-              className="w-full h-auto max-h-[90vh] object-contain"
-            />
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={() => setImageModalOpen(false)}
-              className="absolute top-4 right-4 bg-black/50 hover:bg-black/70 text-white"
-            >
-              <span className="sr-only">Close</span>
-              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-              </svg>
-            </Button>
-          </div>
+        <DialogContent className="max-w-4xl max-h-[90vh] p-0 bg-black/90 border-none">
+          <img 
+            src={post?.image} 
+            alt="Enlarged post image" 
+            className="w-full h-auto max-h-[85vh] object-contain"
+          />
         </DialogContent>
       </Dialog>
     </Dialog>
