@@ -17,11 +17,14 @@ export const SupabasePostsSection: React.FC = () => {
 
   const handleDelete = async (postId: string) => {
     try {
-      await deletePost(postId);
-      toast({
-        title: "Sukces",
-        description: "Post został usunięty",
-      });
+      const success = await airtableService.deletePost(postId);
+      if (success) {
+        toast({
+          title: "Sukces",
+          description: "Post został usunięty",
+        });
+        loadPosts();
+      }
     } catch (error) {
       console.error('Error deleting post:', error);
       toast({
@@ -39,10 +42,13 @@ export const SupabasePostsSection: React.FC = () => {
 
   const handleSave = async (updatedPost: Post) => {
     try {
-      await updatePost(updatedPost.id, updatedPost);
-      toast({ title: "Sukces", description: "Post został zaktualizowany" });
-      setIsEditModalOpen(false);
-      setSelectedPost(null);
+      const success = await airtableService.updatePost(updatedPost.id, updatedPost);
+      if (success) {
+        toast({ title: "Sukces", description: "Post został zaktualizowany" });
+        setIsEditModalOpen(false);
+        setSelectedPost(null);
+        loadPosts();
+      }
     } catch (error) {
       toast({ title: "Błąd", description: "Nie udało się zaktualizować postu", variant: "destructive" });
     }
@@ -126,10 +132,10 @@ export const SupabasePostsSection: React.FC = () => {
                     <div className="p-3">
                       <h4 className="font-medium text-foreground mb-2 line-clamp-1">{post.title}</h4>
                       
-                      {post.image_url ? (
+                      {post.image ? (
                         <div className="mb-3 relative">
-                          <img
-                            src={post.image_url}
+                          <img 
+                            src={post.image} 
                             alt={`Thumbnail for ${post.title}`}
                             className="w-full h-32 object-cover rounded-lg border border-form-container-border shadow-sm hover:shadow-md transition-shadow duration-200"
                           />
