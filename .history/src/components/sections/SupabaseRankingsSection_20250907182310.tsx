@@ -8,40 +8,17 @@ import { CreateFromRankingModal } from '@/components/modals/CreateFromRankingMod
 import { toast } from '@/components/ui/use-toast';
 
 export const SupabaseRankingsSection: React.FC = () => {
-  const [rankings, setRankings] = useState<Ranking[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-  const [selectedRanking, setSelectedRanking] = useState<Ranking | null>(null);
+  const { rankings, loading, error, deleteRanking } = useSupabaseRankings();
+  const [selectedRanking, setSelectedRanking] = useState(null);
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
-
-  const loadRankings = async () => {
-    try {
-      setLoading(true);
-      const rankingsData = await airtableService.getRankings();
-      setRankings(rankingsData);
-      setError(null);
-    } catch (error) {
-      console.error('Error loading rankings:', error);
-      setError('Failed to load rankings');
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  useEffect(() => {
-    loadRankings();
-  }, []);
 
   const handleDelete = async (rankingId: string) => {
     try {
-      const success = await airtableService.deleteRanking(rankingId);
-      if (success) {
-        toast({
-          title: "Sukces",
-          description: "Ranking został usunięty",
-        });
-        loadRankings();
-      }
+      await deleteRanking(rankingId);
+      toast({
+        title: "Sukces",
+        description: "Ranking został usunięty",
+      });
     } catch (error) {
       console.error('Error deleting ranking:', error);
       toast({
@@ -52,7 +29,7 @@ export const SupabaseRankingsSection: React.FC = () => {
     }
   };
 
-  const handleCreateFrom = (ranking: Ranking) => {
+  const handleCreateFrom = (ranking: any) => {
     setSelectedRanking(ranking);
     setIsCreateModalOpen(true);
   };
@@ -107,9 +84,9 @@ export const SupabaseRankingsSection: React.FC = () => {
                 <div key={ranking.id} className="flex items-center justify-between p-4 border border-form-container-border rounded-lg bg-card/50 hover:bg-card/80 transition-all duration-200">
                   <div className="flex items-start space-x-4 flex-1">
                     <div className="flex-shrink-0">
-                      {ranking.thumbnailUrl ? (
+                      {ranking.thumbnail_url ? (
                         <img 
-                          src={ranking.thumbnailUrl} 
+                          src={ranking.thumbnail_url} 
                           alt={`Thumbnail for ${ranking.title}`}
                           className="w-20 h-20 object-cover rounded-lg border border-form-container-border shadow-sm"
                         />
@@ -123,9 +100,9 @@ export const SupabaseRankingsSection: React.FC = () => {
                       <h4 className="font-medium text-foreground">{ranking.title}</h4>
                       <p className="text-sm text-muted-foreground line-clamp-2 mt-1">
                         Ratio: {ranking.ratio}% 
-                        {ranking.thumbnailUrl && (
+                        {ranking.video_url && (
                           <a 
-                            href={ranking.videoUrl} 
+                            href={ranking.video_url} 
                             target="_blank" 
                             rel="noopener noreferrer"
                             className="ml-2 text-primary hover:underline inline-flex items-center space-x-1"
@@ -136,11 +113,11 @@ export const SupabaseRankingsSection: React.FC = () => {
                         )}
                       </p>
                       <div className="flex items-center space-x-2 mt-2">
-                        <Badge variant={ranking.shouldCreateContent ? "default" : "secondary"} className="platform-selected">
-                          {ranking.shouldCreateContent ? 'Gotowy do użycia' : 'W analizie'}
+                        <Badge variant={ranking.should_create_content ? "default" : "secondary"} className="platform-selected">
+                          {ranking.should_create_content ? 'Gotowy do użycia' : 'W analizie'}
                         </Badge>
                         <span className="text-xs text-muted-foreground">
-                          {new Date(ranking.createdAt).toLocaleDateString('pl-PL')}
+                          {new Date(ranking.created_at).toLocaleDateString('pl-PL')}
                         </span>
                       </div>
                     </div>
