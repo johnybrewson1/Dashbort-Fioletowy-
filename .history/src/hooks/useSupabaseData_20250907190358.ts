@@ -93,17 +93,10 @@ export const useSupabaseScripts = () => {
   const loadScripts = async () => {
     try {
       setLoading(true);
-      
-      // Debug: Check current user
-      const { data: { user } } = await supabase.auth.getUser();
-      console.log('Current user for scripts:', user);
-      
       const data = await scriptsService.getAll();
-      console.log('Loaded scripts:', data);
       setScripts(data);
       setError(null);
     } catch (err) {
-      console.error('Error loading scripts:', err);
       setError(err instanceof Error ? err.message : 'Failed to load scripts');
     } finally {
       setLoading(false);
@@ -175,17 +168,10 @@ export const useSupabaseRankings = () => {
   const loadRankings = async () => {
     try {
       setLoading(true);
-      
-      // Debug: Check current user
-      const { data: { user } } = await supabase.auth.getUser();
-      console.log('Current user for rankings:', user);
-      
       const data = await rankingsService.getAll();
-      console.log('Loaded rankings:', data);
       setRankings(data);
       setError(null);
     } catch (err) {
-      console.error('Error loading rankings:', err);
       setError(err instanceof Error ? err.message : 'Failed to load rankings');
     } finally {
       setLoading(false);

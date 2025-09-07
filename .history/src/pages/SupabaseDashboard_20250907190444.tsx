@@ -81,9 +81,6 @@ const SupabaseDashboard = () => {
             </Card>
 
             <SupabaseStatsCards />
-            
-            {/* Test Data Creator */}
-            <TestDataCreator />
           </div>
         );
     }
