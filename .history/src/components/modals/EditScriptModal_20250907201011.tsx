@@ -212,7 +212,7 @@ export const EditScriptModal: React.FC<EditScriptModalProps> = ({ script, isOpen
                 ) : (
                   <div className="flex flex-col items-center space-y-2">
                     <Upload className="w-8 h-8 text-muted-foreground" />
-                    <span className="text-sm text-muted-foreground">Kliknij aby pobrać thumbnail</span>
+                    <span className="text-sm text-muted-foreground">Kliknij aby przesłać thumbnail</span>
                   </div>
                 )}
               </label>

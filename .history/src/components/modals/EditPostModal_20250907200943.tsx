@@ -306,12 +306,12 @@ export const EditPostModal: React.FC<EditPostModalProps> = ({ post, isOpen, onCl
                 {uploadingImage ? (
                   <div className="flex flex-col items-center space-y-2">
                     <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
-                    <span className="text-sm text-muted-foreground">Pobieranie...</span>
+                    <span className="text-sm text-muted-foreground">Przesyłanie...</span>
                   </div>
                 ) : (
                   <div className="flex flex-col items-center space-y-2">
                     <Upload className="w-8 h-8 text-muted-foreground" />
-                    <span className="text-sm text-muted-foreground">Kliknij aby pobrać obraz</span>
+                    <span className="text-sm text-muted-foreground">Kliknij aby przesłać obraz</span>
                   </div>
                 )}
               </label>
