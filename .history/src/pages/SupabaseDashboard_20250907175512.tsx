@@ -22,8 +22,6 @@ const SupabaseDashboard = () => {
         return <SupabasePostsSection />;
       case 'scripts':
         return <SupabaseScriptsSection />;
-      case 'rankings':
-        return <SupabaseRankingsSection />;
       case 'settings':
         return <SupabaseSettingsSection />;
       default: // dashboard
