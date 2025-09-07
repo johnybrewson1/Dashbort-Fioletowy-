@@ -126,10 +126,10 @@ export const SupabaseScriptsSection: React.FC = () => {
                     <div className="p-3">
                       <h4 className="font-medium text-foreground mb-2 line-clamp-1">{script.title}</h4>
                       
-                      {script.image_url ? (
+                      {script.image ? (
                         <div className="mb-3 relative">
-                          <img
-                            src={script.image_url}
+                          <img 
+                            src={script.image} 
                             alt={`Thumbnail for ${script.title}`}
                             className="w-full h-32 object-cover rounded-lg border border-form-container-border shadow-sm hover:shadow-md transition-shadow duration-200"
                           />
@@ -147,7 +147,7 @@ export const SupabaseScriptsSection: React.FC = () => {
                       
                       <div className="flex items-center justify-between">
                         <span className="text-xs text-muted-foreground">
-                          {new Date(script.created_at).toLocaleDateString('pl-PL')}
+                          {new Date(script.createdAt).toLocaleDateString('pl-PL')}
                         </span>
                         <Badge variant="outline" className="text-xs">
                           draft

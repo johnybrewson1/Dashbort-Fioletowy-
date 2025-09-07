@@ -17,11 +17,14 @@ export const SupabaseScriptsSection: React.FC = () => {
 
   const handleDelete = async (scriptId: string) => {
     try {
-      await deleteScript(scriptId);
-      toast({
-        title: "Sukces",
-        description: "Skrypt został usunięty",
-      });
+      const success = await airtableService.deleteScript(scriptId);
+      if (success) {
+        toast({
+          title: "Sukces",
+          description: "Skrypt został usunięty",
+        });
+        loadScripts();
+      }
     } catch (error) {
       console.error('Error deleting script:', error);
       toast({
@@ -39,10 +42,13 @@ export const SupabaseScriptsSection: React.FC = () => {
 
   const handleSave = async (updatedScript: Script) => {
     try {
-      await updateScript(updatedScript.id, updatedScript);
-      toast({ title: "Sukces", description: "Skrypt został zaktualizowany" });
-      setIsEditModalOpen(false);
-      setSelectedScript(null);
+      const success = await airtableService.updateScript(updatedScript.id, updatedScript);
+      if (success) {
+        toast({ title: "Sukces", description: "Skrypt został zaktualizowany" });
+        setIsEditModalOpen(false);
+        setSelectedScript(null);
+        loadScripts();
+      }
     } catch (error) {
       toast({ title: "Błąd", description: "Nie udało się zaktualizować skryptu", variant: "destructive" });
     }
@@ -104,7 +110,7 @@ export const SupabaseScriptsSection: React.FC = () => {
                   <div className="p-4">
                     <div className="flex items-start justify-between mb-3">
                       <Badge variant="secondary" className="platform-selected text-xs">
-                        {script.script_type}
+                        {script.type}
                       </Badge>
                       
                       <div className="flex items-center space-x-1 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
@@ -126,10 +132,10 @@ export const SupabaseScriptsSection: React.FC = () => {
                     <div className="p-3">
                       <h4 className="font-medium text-foreground mb-2 line-clamp-1">{script.title}</h4>
                       
-                      {script.image_url ? (
+                      {script.image ? (
                         <div className="mb-3 relative">
-                          <img
-                            src={script.image_url}
+                          <img 
+                            src={script.image} 
                             alt={`Thumbnail for ${script.title}`}
                             className="w-full h-32 object-cover rounded-lg border border-form-container-border shadow-sm hover:shadow-md transition-shadow duration-200"
                           />
@@ -147,7 +153,7 @@ export const SupabaseScriptsSection: React.FC = () => {
                       
                       <div className="flex items-center justify-between">
                         <span className="text-xs text-muted-foreground">
-                          {new Date(script.created_at).toLocaleDateString('pl-PL')}
+                          {new Date(script.createdAt).toLocaleDateString('pl-PL')}
                         </span>
                         <Badge variant="outline" className="text-xs">
                           draft

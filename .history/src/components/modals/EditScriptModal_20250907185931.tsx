@@ -83,7 +83,7 @@ export const EditScriptModal: React.FC<EditScriptModalProps> = ({ script, isOpen
         ...script,
         title,
         content,
-        script_type: scriptType
+        type: scriptType
       };
       
       onSave(updatedScript);

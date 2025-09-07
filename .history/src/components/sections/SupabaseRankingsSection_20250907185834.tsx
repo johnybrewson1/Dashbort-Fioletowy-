@@ -102,9 +102,9 @@ export const SupabaseRankingsSection: React.FC = () => {
                       <h4 className="font-medium text-foreground">{ranking.title}</h4>
                       <p className="text-sm text-muted-foreground line-clamp-2 mt-1">
                         Ratio: {ranking.ratio}% 
-                        {ranking.thumbnail_url && (
+                        {ranking.thumbnailUrl && (
                           <a 
-                            href={ranking.video_url} 
+                            href={ranking.videoUrl} 
                             target="_blank" 
                             rel="noopener noreferrer"
                             className="ml-2 text-primary hover:underline inline-flex items-center space-x-1"

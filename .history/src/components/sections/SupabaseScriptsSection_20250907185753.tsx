@@ -147,7 +147,7 @@ export const SupabaseScriptsSection: React.FC = () => {
                       
                       <div className="flex items-center justify-between">
                         <span className="text-xs text-muted-foreground">
-                          {new Date(script.created_at).toLocaleDateString('pl-PL')}
+                          {new Date(script.createdAt).toLocaleDateString('pl-PL')}
                         </span>
                         <Badge variant="outline" className="text-xs">
                           draft

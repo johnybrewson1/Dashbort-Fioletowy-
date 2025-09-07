@@ -86,9 +86,9 @@ export const SupabaseRankingsSection: React.FC = () => {
                 <div key={ranking.id} className="flex items-center justify-between p-4 border border-form-container-border rounded-lg bg-card/50 hover:bg-card/80 transition-all duration-200">
                   <div className="flex items-start space-x-4 flex-1">
                     <div className="flex-shrink-0">
-                      {ranking.thumbnail_url ? (
+                      {ranking.thumbnailUrl ? (
                         <img 
-                          src={ranking.thumbnail_url} 
+                          src={ranking.thumbnailUrl} 
                           alt={`Thumbnail for ${ranking.title}`}
                           className="w-20 h-20 object-cover rounded-lg border border-form-container-border shadow-sm"
                         />
@@ -102,9 +102,9 @@ export const SupabaseRankingsSection: React.FC = () => {
                       <h4 className="font-medium text-foreground">{ranking.title}</h4>
                       <p className="text-sm text-muted-foreground line-clamp-2 mt-1">
                         Ratio: {ranking.ratio}% 
-                        {ranking.thumbnail_url && (
+                        {ranking.thumbnailUrl && (
                           <a 
-                            href={ranking.video_url} 
+                            href={ranking.videoUrl} 
                             target="_blank" 
                             rel="noopener noreferrer"
                             className="ml-2 text-primary hover:underline inline-flex items-center space-x-1"
