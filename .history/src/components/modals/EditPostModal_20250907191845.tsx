@@ -162,8 +162,7 @@ export const EditPostModal: React.FC<EditPostModalProps> = ({ post, isOpen, onCl
         ...post,
         title,
         content,
-        platform,
-        image_url: imageUrl
+        platform
       };
       
       onSave(updatedPost);
@@ -244,29 +243,6 @@ export const EditPostModal: React.FC<EditPostModalProps> = ({ post, isOpen, onCl
               placeholder="Tytuł postu..."
               className="input-field text-lg p-4 h-12 mt-2 text-white placeholder:text-gray-400"
             />
-          </div>
-
-          <div>
-            <Label htmlFor="edit-image" className="text-lg font-semibold text-foreground">Image URL</Label>
-            <Input
-              id="edit-image"
-              value={imageUrl}
-              onChange={(e) => setImageUrl(e.target.value)}
-              placeholder="https://example.com/image.jpg"
-              className="input-field text-lg p-4 h-12 mt-2 text-white placeholder:text-gray-400"
-            />
-            {imageUrl && (
-              <div className="mt-3">
-                <img
-                  src={imageUrl}
-                  alt="Image preview"
-                  className="w-full h-32 object-cover rounded-lg border border-form-container-border"
-                  onError={(e) => {
-                    e.currentTarget.style.display = 'none';
-                  }}
-                />
-              </div>
-            )}
           </div>
 
           {post?.image && (
