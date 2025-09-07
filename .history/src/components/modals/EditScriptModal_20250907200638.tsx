@@ -185,44 +185,20 @@ export const EditScriptModal: React.FC<EditScriptModalProps> = ({ script, isOpen
           </div>
 
           <div>
-            <Label className="text-lg font-semibold text-foreground">Thumbnail</Label>
-            <div className="mt-2">
-              <input
-                type="file"
-                accept="image/*"
-                onChange={(e) => {
-                  const file = e.target.files?.[0];
-                  if (file) {
-                    handleImageUpload(file);
-                  }
-                }}
-                className="hidden"
-                id="script-image-upload"
-                disabled={uploadingImage}
-              />
-              <label
-                htmlFor="script-image-upload"
-                className="flex items-center justify-center w-full h-32 border-2 border-dashed border-form-container-border rounded-lg cursor-pointer hover:border-primary/50 transition-colors"
-              >
-                {uploadingImage ? (
-                  <div className="flex flex-col items-center space-y-2">
-                    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
-                    <span className="text-sm text-muted-foreground">Przesyłanie...</span>
-                  </div>
-                ) : (
-                  <div className="flex flex-col items-center space-y-2">
-                    <Upload className="w-8 h-8 text-muted-foreground" />
-                    <span className="text-sm text-muted-foreground">Kliknij aby przesłać thumbnail</span>
-                  </div>
-                )}
-              </label>
-            </div>
+            <Label htmlFor="edit-script-image" className="text-lg font-semibold text-foreground">Thumbnail URL</Label>
+            <Input
+              id="edit-script-image"
+              value={imageUrl}
+              onChange={(e) => setImageUrl(e.target.value)}
+              placeholder="https://example.com/image.jpg"
+              className="input-field text-lg p-4 h-12 mt-2 text-white placeholder:text-gray-400"
+            />
             {imageUrl && (
               <div className="mt-3">
                 <img
                   src={imageUrl}
                   alt="Thumbnail preview"
-                  className="max-w-md h-48 object-cover rounded-lg border border-form-container-border mx-auto"
+                  className="w-full h-32 object-cover rounded-lg border border-form-container-border"
                   onError={(e) => {
                     e.currentTarget.style.display = 'none';
                   }}
