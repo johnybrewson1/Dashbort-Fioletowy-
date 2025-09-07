@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Edit, Trash2, Code, Plus } from 'lucide-react';
+import { Edit, RefreshCw, Trash2, Code, Plus } from 'lucide-react';
 import { airtableService, Script } from '@/services/airtable';
 import { EditScriptModal } from '@/components/modals/EditScriptModal';
 import { toast } from '@/components/ui/use-toast';

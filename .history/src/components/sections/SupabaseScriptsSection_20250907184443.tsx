@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Edit, Trash2, Code, Plus } from 'lucide-react';
+import { Edit, RefreshCw, Trash2, Code, Plus } from 'lucide-react';
 import { airtableService, Script } from '@/services/airtable';
 import { EditScriptModal } from '@/components/modals/EditScriptModal';
 import { toast } from '@/components/ui/use-toast';
@@ -73,6 +73,47 @@ export const SupabaseScriptsSection: React.FC = () => {
     }
   };
 
+  const handleRegenerate = async (scriptId: string) => {
+    try {
+      setLoading(true);
+      const script = scripts.find(s => s.id === scriptId);
+      if (!script) return;
+
+      const response = await fetch('https://hook.eu2.make.com/lxr7hxctm1s5olq53e29hl9dde9ppmyn', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          type: 'regenerate_script',
+          scriptId: script.id,
+          currentContent: script.content,
+          scriptType: script.type,
+          rodzajSkryptu: script.type,
+          image: script.image,
+          voiceForPosts: settings.voiceForPosts,
+          voiceForScripts: settings.voiceForScripts,
+          style: settings.style, 
+          avatarRecipient: settings.avatarRecipient
+        })
+      });
+      
+      if (response.ok) {
+        toast({
+          title: "Sukces",
+          description: "Skrypt został zregenerowany",
+        });
+        loadScripts();
+      }
+    } catch (error) {
+      console.error('Error regenerating script:', error);
+      toast({
+        title: "Błąd",
+        description: "Nie udało się zregenerować skryptu",
+        variant: "destructive",
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
 
   if (loading) {
     return (
@@ -123,7 +164,7 @@ export const SupabaseScriptsSection: React.FC = () => {
               scripts.map((script) => (
                 <div 
                   key={script.id} 
-                  className="group relative bg-card/50 border border-form-container-border rounded-lg hover:bg-card/80 hover:border-primary/30 hover:shadow-lg hover:shadow-primary/10 transition-all duration-300 cursor-pointer transform hover:scale-[1.02]"
+                  className="group relative bg-card/50 border border-form-container-border rounded-lg hover:bg-card/80 transition-all duration-200 cursor-pointer"
                   onClick={() => handleEdit(script)}
                 >
                   <div className="p-4">
@@ -132,7 +173,21 @@ export const SupabaseScriptsSection: React.FC = () => {
                         {script.type}
                       </Badge>
                       
-                      <div className="flex items-center space-x-1 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                      <div className="flex items-center space-x-1 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
+                        <Button 
+                          variant="ghost" 
+                          size="icon"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleRegenerate(script.id);
+                          }}
+                          disabled={loading}
+                          className="hover:bg-secondary/10 hover:text-secondary h-8 w-8"
+                          title="Zregeneruj skrypt"
+                        >
+                          <RefreshCw className={`w-3 h-3 ${loading ? 'animate-spin' : ''}`} />
+                        </Button>
+                        
                         <Button 
                           variant="ghost" 
                           size="icon"

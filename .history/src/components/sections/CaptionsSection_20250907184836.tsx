@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Edit, Trash2, MessageSquare, Plus } from 'lucide-react';
+import { Edit, RefreshCw, Trash2, MessageSquare, Plus } from 'lucide-react';
 import { airtableService, Script } from '@/services/airtable';
 import { EditScriptModal } from '@/components/modals/EditScriptModal';
 import { toast } from '@/components/ui/use-toast';
@@ -86,6 +86,47 @@ export const CaptionsSection: React.FC = () => {
     }
   };
 
+  const handleRegenerate = async (captionId: string) => {
+    try {
+      setLoading(true);
+      const caption = captions.find(c => c.id === captionId);
+      if (!caption) return;
+
+      const response = await fetch('https://hook.eu2.make.com/lxr7hxctm1s5olq53e29hl9dde9ppmyn', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          type: 'regenerate_script',
+          scriptId: caption.id,
+          currentContent: caption.content,
+          scriptType: caption.type,
+          rodzajSkryptu: caption.type,
+          image: caption.image,
+          voiceForPosts: settings.voiceForPosts,
+          voiceForScripts: settings.voiceForScripts,
+          style: settings.style, 
+          avatarRecipient: settings.avatarRecipient
+        })
+      });
+      
+      if (response.ok) {
+        toast({
+          title: "Sukces",
+          description: "Caption został zregenerowany",
+        });
+        loadCaptions();
+      }
+    } catch (error) {
+      console.error('Error regenerating caption:', error);
+      toast({
+        title: "Błąd",
+        description: "Nie udało się zregenerować caption",
+        variant: "destructive",
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
 
   if (loading) {
     return (
@@ -136,7 +177,7 @@ export const CaptionsSection: React.FC = () => {
               captions.map((caption) => (
                 <div 
                   key={caption.id} 
-                  className="group relative bg-card/50 border border-form-container-border rounded-lg hover:bg-card/80 hover:border-primary/30 hover:shadow-lg hover:shadow-primary/10 transition-all duration-300 cursor-pointer transform hover:scale-[1.02]"
+                  className="group relative bg-card/50 border border-form-container-border rounded-lg hover:bg-card/80 transition-all duration-200 cursor-pointer"
                   onClick={() => handleEdit(caption)}
                 >
                   <div className="p-4">
@@ -145,7 +186,21 @@ export const CaptionsSection: React.FC = () => {
                         {caption.type}
                       </Badge>
                       
-                      <div className="flex items-center space-x-1 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                      <div className="flex items-center space-x-1 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
+                        <Button 
+                          variant="ghost" 
+                          size="icon"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleRegenerate(caption.id);
+                          }}
+                          disabled={loading}
+                          className="hover:bg-secondary/10 hover:text-secondary h-8 w-8"
+                          title="Zregeneruj caption"
+                        >
+                          <RefreshCw className={`w-3 h-3 ${loading ? 'animate-spin' : ''}`} />
+                        </Button>
+                        
                         <Button 
                           variant="ghost" 
                           size="icon"
