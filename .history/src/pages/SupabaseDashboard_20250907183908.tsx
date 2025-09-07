@@ -23,8 +23,6 @@ const SupabaseDashboard = () => {
         return <SupabasePostsSection />;
       case 'scripts':
         return <SupabaseScriptsSection />;
-      case 'captions':
-        return <CaptionsSection />;
       case 'rankings':
         return <SupabaseRankingsSection />;
       case 'settings':

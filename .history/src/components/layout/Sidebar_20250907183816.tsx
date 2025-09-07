@@ -19,7 +19,6 @@ export const Sidebar: React.FC<SidebarProps> = ({ activeSection, onSectionChange
     { id: 'dashboard', label: 'Dashboard', icon: Home },
     { id: 'posts', label: 'Posty', icon: FileText },
     { id: 'scripts', label: 'Skrypty', icon: Video },
-    { id: 'captions', label: 'Captions', icon: MessageSquare },
     { id: 'rankings', label: 'Ranking', icon: TrendingUp },
     { id: 'settings', label: 'Ustawienia', icon: Settings },
   ];
