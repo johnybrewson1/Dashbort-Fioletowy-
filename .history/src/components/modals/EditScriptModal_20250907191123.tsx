@@ -32,7 +32,6 @@ export const EditScriptModal: React.FC<EditScriptModalProps> = ({ script, isOpen
       setTitle(script.title);
       setContent(script.content);
       setScriptType(script.script_type);
-      setImageUrl(script.image_url || '');
     }
   }, [script]);
 
@@ -85,8 +84,7 @@ export const EditScriptModal: React.FC<EditScriptModalProps> = ({ script, isOpen
         ...script,
         title,
         content,
-        script_type: scriptType,
-        image_url: imageUrl
+        script_type: scriptType
       };
       
       onSave(updatedScript);
@@ -148,29 +146,6 @@ export const EditScriptModal: React.FC<EditScriptModalProps> = ({ script, isOpen
                 <SelectItem value="Średni skrypt">Średni skrypt</SelectItem>
               </SelectContent>
             </Select>
-          </div>
-
-          <div>
-            <Label htmlFor="edit-script-image" className="text-lg font-semibold text-foreground">Thumbnail URL</Label>
-            <Input
-              id="edit-script-image"
-              value={imageUrl}
-              onChange={(e) => setImageUrl(e.target.value)}
-              placeholder="https://example.com/image.jpg"
-              className="input-field text-lg p-4 h-12 mt-2 text-white placeholder:text-gray-400"
-            />
-            {imageUrl && (
-              <div className="mt-3">
-                <img
-                  src={imageUrl}
-                  alt="Thumbnail preview"
-                  className="w-full h-32 object-cover rounded-lg border border-form-container-border"
-                  onError={(e) => {
-                    e.currentTarget.style.display = 'none';
-                  }}
-                />
-              </div>
-            )}
           </div>
 
           <div>

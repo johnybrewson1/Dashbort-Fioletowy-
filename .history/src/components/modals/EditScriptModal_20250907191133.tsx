@@ -151,29 +151,6 @@ export const EditScriptModal: React.FC<EditScriptModalProps> = ({ script, isOpen
           </div>
 
           <div>
-            <Label htmlFor="edit-script-image" className="text-lg font-semibold text-foreground">Thumbnail URL</Label>
-            <Input
-              id="edit-script-image"
-              value={imageUrl}
-              onChange={(e) => setImageUrl(e.target.value)}
-              placeholder="https://example.com/image.jpg"
-              className="input-field text-lg p-4 h-12 mt-2 text-white placeholder:text-gray-400"
-            />
-            {imageUrl && (
-              <div className="mt-3">
-                <img
-                  src={imageUrl}
-                  alt="Thumbnail preview"
-                  className="w-full h-32 object-cover rounded-lg border border-form-container-border"
-                  onError={(e) => {
-                    e.currentTarget.style.display = 'none';
-                  }}
-                />
-              </div>
-            )}
-          </div>
-
-          <div>
             <Label htmlFor="edit-script-content" className="text-lg font-semibold text-foreground">Treść skryptu</Label>
             <Textarea
               id="edit-script-content"
