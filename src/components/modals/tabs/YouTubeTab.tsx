@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
-import { Instagram, Music, Youtube, Linkedin, Twitter, FileText, Sparkles, Facebook } from 'lucide-react';
+import { Instagram, Code, Linkedin, Twitter, FileText, Sparkles, Facebook } from 'lucide-react';
 
 interface YouTubeTabProps {
   youtubeUrl: string;
@@ -20,11 +20,8 @@ interface YouTubeTabProps {
   };
   onPlatformChange: (platform: string, checked: boolean) => void;
   selectedContentTypes: {
-    instagram: string[];
+    tiktok: string[];
     youtube: string[];
-    linkedin: string[];
-    x: string[];
-    blog: string[];
   };
   onContentTypeChange: (platform: string, types: string[]) => void;
   useThumbnail?: boolean;
@@ -48,8 +45,8 @@ export const YouTubeTab: React.FC<YouTubeTabProps> = ({
   const [guidelines, setGuidelines] = useState('');
   const platforms = [
     { key: 'instagram', name: 'Instagram 📷', icon: Instagram },
-    { key: 'tiktok', name: 'TikTok 🎵', icon: Music },
-    { key: 'youtube', name: 'YouTube ▶️', icon: Youtube },
+    { key: 'tiktok', name: 'Captions 📝', icon: FileText },
+    { key: 'youtube', name: 'Skrypty 💻', icon: Code },
     { key: 'linkedin', name: 'LinkedIn 💼', icon: Linkedin },
     { key: 'x', name: 'X 🐦', icon: Twitter },
     { key: 'facebook', name: 'Facebook 👥', icon: Facebook },
@@ -57,10 +54,9 @@ export const YouTubeTab: React.FC<YouTubeTabProps> = ({
   ];
 
   const contentTypeOptions = {
-    instagram: ['Post', 'Captions'],
-    youtube: ['Haczyki', 'Krótki skrypt', 'Średni skrypt', 'Captions', 'Thumbnail'],
-    blog: []
-  };
+    tiktok: ['TikTok', 'YouTube', 'Instagram'],
+    youtube: ['Haczyki', 'Krótki skrypt', 'Średni skrypt', 'Thumbnail']
+  } as const;
 
   const handlePlatformToggle = (platformKey: string) => {
     onPlatformChange(platformKey, !selectedPlatforms[platformKey as keyof typeof selectedPlatforms]);
@@ -135,33 +131,12 @@ export const YouTubeTab: React.FC<YouTubeTabProps> = ({
           ))}
         </div>
 
-        {/* Content Type Options */}
-        {(selectedPlatforms.instagram || selectedPlatforms.youtube || selectedPlatforms.blog) && (
+        {/* Content Type Options - only for Captions and Skrypty */}
+        {(selectedPlatforms.youtube || selectedPlatforms.tiktok) && (
           <div className="space-y-4">
-            {selectedPlatforms.instagram && (
-              <div>
-                <p className="text-sm font-medium text-muted-foreground mb-2">Opcje Instagram:</p>
-                <div className="flex flex-wrap gap-2">
-                  {contentTypeOptions.instagram.map((type) => (
-                    <button
-                      key={type}
-                      onClick={() => handleContentTypeToggle('instagram', type)}
-                      className={`px-4 py-2 rounded-lg text-sm font-medium transition-all duration-300 ${
-                        selectedContentTypes.instagram?.includes(type)
-                          ? 'bg-primary text-primary-foreground'
-                          : 'bg-surface border border-form-container-border hover:border-primary/50'
-                      }`}
-                    >
-                      {type}
-                    </button>
-                  ))}
-                </div>
-              </div>
-            )}
-
             {selectedPlatforms.youtube && (
               <div>
-                <p className="text-sm font-medium text-muted-foreground mb-2">Opcje YouTube:</p>
+                <p className="text-sm font-medium text-muted-foreground mb-2">Opcje Skrypty:</p>
                 <div className="flex flex-wrap gap-2">
                   {contentTypeOptions.youtube.map((type) => (
                     <button
@@ -180,18 +155,24 @@ export const YouTubeTab: React.FC<YouTubeTabProps> = ({
               </div>
             )}
 
-            {selectedPlatforms.blog && (
+            {selectedPlatforms.tiktok && (
               <div>
-                <Label htmlFor="blog-purpose" className="text-sm font-medium text-muted-foreground mb-2 block">
-                  Jaki jest cel artykułu?
-                </Label>
-                <Input
-                  id="blog-purpose"
-                  placeholder="Np. Edukacyjny, promocyjny, informacyjny..."
-                  value={guidelines}
-                  onChange={(e) => setGuidelines(e.target.value)}
-                  className="input-field text-white placeholder:text-gray-400"
-                />
+                <p className="text-sm font-medium text-muted-foreground mb-2">Opcje Captions:</p>
+                <div className="flex flex-wrap gap-2">
+                  {contentTypeOptions.tiktok.map((type) => (
+                    <button
+                      key={type}
+                      onClick={() => handleContentTypeToggle('tiktok', type)}
+                      className={`px-4 py-2 rounded-lg text-sm font-medium transition-all duration-300 ${
+                        selectedContentTypes.tiktok?.includes(type)
+                          ? 'bg-primary text-primary-foreground'
+                          : 'bg-surface border border-form-container-border hover:border-primary/50'
+                      }`}
+                    >
+                      {type}
+                    </button>
+                  ))}
+                </div>
               </div>
             )}
           </div>

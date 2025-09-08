@@ -6,7 +6,7 @@ import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { RefreshCw, Image, Upload } from 'lucide-react';
+import { RefreshCw, Image, Upload, Download } from 'lucide-react';
 import { toast } from '@/components/ui/use-toast';
 import { useSettings } from '@/hooks/useSettings';
 import { supabase } from '@/integrations/supabase/client';
@@ -30,6 +30,7 @@ export const EditPostModal: React.FC<EditPostModalProps> = ({ post, isOpen, onCl
   const [regeneratingImage, setRegeneratingImage] = useState(false);
   const [regeneratingAll, setRegeneratingAll] = useState(false);
   const [imageModalOpen, setImageModalOpen] = useState(false);
+  const [publishing, setPublishing] = useState(false);
   const { settings } = useSettings();
 
   useEffect(() => {
@@ -215,14 +216,32 @@ export const EditPostModal: React.FC<EditPostModalProps> = ({ post, isOpen, onCl
     }
   };
 
+  const handlePublish = async () => {
+    if (!post) return;
+    setPublishing(true);
+    try {
+      const updatedPost = {
+        ...post,
+        title,
+        content,
+        platform,
+        image_url: imageUrl,
+        status: 'published'
+      };
+      onSave(updatedPost);
+    } finally {
+      setPublishing(false);
+    }
+  };
+
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto custom-scrollbar form-container">
-        <DialogHeader>
+      <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto hide-scrollbar form-container">
+        <DialogHeader className="flex flex-row items-center justify-between space-y-0">
           <DialogTitle className="text-2xl font-bold bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
             Edytuj Post
           </DialogTitle>
-          <div className="flex gap-2 mt-4">
+          <div className="flex gap-2">
             <Button
               variant="ghost"
               size="sm"
@@ -252,6 +271,14 @@ export const EditPostModal: React.FC<EditPostModalProps> = ({ post, isOpen, onCl
             >
               <RefreshCw className={`w-4 h-4 mr-2 ${regeneratingAll ? 'animate-spin' : ''}`} />
               Regenerate wszystko
+            </Button>
+            <Button
+              size="sm"
+              onClick={handlePublish}
+              disabled={publishing}
+              className="bg-primary text-primary-foreground hover:bg-primary/90"
+            >
+              {publishing ? 'Publikowanie...' : 'Opublikuj'}
             </Button>
           </div>
         </DialogHeader>
@@ -286,47 +313,21 @@ export const EditPostModal: React.FC<EditPostModalProps> = ({ post, isOpen, onCl
           <div>
             <div className="flex items-center justify-between mb-2">
               <Label className="text-lg font-semibold text-foreground">Obraz</Label>
-              <input
-                type="file"
-                accept="image/*"
-                onChange={(e) => {
-                  const file = e.target.files?.[0];
-                  if (file) {
-                    handleImageUpload(file);
-                  }
-                }}
-                className="hidden"
-                id="image-upload"
-                disabled={uploadingImage}
-              />
-              <label htmlFor="image-upload">
-                <Button
-                  type="button"
-                  variant="outline"
-                  size="sm"
-                  disabled={uploadingImage}
-                  className="flex items-center space-x-2"
-                >
-                  {uploadingImage ? (
-                    <>
-                      <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-primary"></div>
-                      <span>Pobieranie...</span>
-                    </>
-                  ) : (
-                    <>
-                      <Upload className="w-4 h-4" />
-                      <span>Pobierz</span>
-                    </>
-                  )}
-                </Button>
-              </label>
+              {imageUrl && (
+                <a href={imageUrl} download target="_blank" rel="noopener noreferrer">
+                  <Button type="button" variant="ghost" size="sm" className="flex items-center space-x-2">
+                    <Download className="w-4 h-4" />
+                    <span>Pobierz</span>
+                  </Button>
+                </a>
+              )}
             </div>
             {imageUrl && (
-              <div className="mt-3">
+              <div className="mt-3 flex justify-center">
                 <img
                   src={imageUrl}
                   alt="Image preview"
-                  className="w-full h-64 object-cover rounded-lg border border-form-container-border cursor-pointer hover:opacity-90 transition-opacity"
+                  className="w-full max-w-[560px] h-40 md:h-44 object-cover rounded-lg border border-form-container-border cursor-pointer hover:opacity-90 transition-opacity"
                   onClick={() => setImageModalOpen(true)}
                   onError={(e) => {
                     e.currentTarget.style.display = 'none';
@@ -377,17 +378,6 @@ export const EditPostModal: React.FC<EditPostModalProps> = ({ post, isOpen, onCl
               alt="Enlarged post image" 
               className="w-full h-auto max-h-[90vh] object-contain"
             />
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={() => setImageModalOpen(false)}
-              className="absolute top-4 right-4 bg-black/50 hover:bg-black/70 text-white"
-            >
-              <span className="sr-only">Close</span>
-              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-              </svg>
-            </Button>
           </div>
         </DialogContent>
       </Dialog>

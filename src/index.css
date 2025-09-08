@@ -96,7 +96,11 @@
     @apply bg-background text-foreground font-poppins antialiased;
     background: var(--gradient-background);
     min-height: 100vh;
+    /* Hide global scrollbars but keep wheel/touch scrolling */
+    -ms-overflow-style: none; /* IE and Edge */
+    scrollbar-width: none; /* Firefox */
   }
+  body::-webkit-scrollbar { display: none; }
 }
 
 /* Custom Component Styles */

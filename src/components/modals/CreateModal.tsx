@@ -116,7 +116,7 @@ export const CreateModal: React.FC<CreateModalProps> = ({ isOpen, onClose }) => 
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="form-container border-form-container-border max-w-4xl max-h-[90vh] overflow-y-auto custom-scrollbar backdrop-blur-sm">
+      <DialogContent className="form-container border-form-container-border max-w-4xl max-h-[90vh] overflow-y-auto hide-scrollbar backdrop-blur-sm">
         <DialogHeader>
           <DialogTitle className="text-2xl font-bold bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
             Stwórz Nową Treść

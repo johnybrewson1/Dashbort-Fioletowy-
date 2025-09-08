@@ -103,7 +103,7 @@ export const CreateFromRankingModal: React.FC<CreateFromRankingModalProps> = ({ 
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto custom-scrollbar">
+      <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto hide-scrollbar">
         <DialogHeader>
           <DialogTitle className="text-xl font-bold">
             Stwórz z rankingu: {ranking?.title}

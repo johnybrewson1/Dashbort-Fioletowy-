@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
-import { Instagram, Music, Youtube, Linkedin, Twitter, FileText, Facebook } from 'lucide-react';
+import { Instagram, Code, Linkedin, Twitter, FileText, Facebook } from 'lucide-react';
 
 interface PlatformSelection {
   instagram: boolean;
@@ -50,8 +50,8 @@ const PlatformMultiSelect: React.FC<PlatformMultiSelectProps> = ({
 }) => {
   const platforms = [
     { key: 'instagram', name: 'Instagram 📷', icon: Instagram },
-    { key: 'tiktok', name: 'TikTok 🎵', icon: Music },
-    { key: 'youtube', name: 'YouTube ▶️', icon: Youtube },
+    { key: 'tiktok', name: 'Captions 📝', icon: FileText },
+    { key: 'youtube', name: 'Skrypty 💻', icon: Code },
     { key: 'linkedin', name: 'LinkedIn 💼', icon: Linkedin },
     { key: 'x', name: 'X 🐦', icon: Twitter },
     { key: 'facebook', name: 'Facebook 👥', icon: Facebook },
@@ -60,8 +60,10 @@ const PlatformMultiSelect: React.FC<PlatformMultiSelectProps> = ({
 
   const contentTypeOptions = {
     instagram: ['Post', 'Captions', 'Filmy'],
-    tiktok: ['Filmy'],
-    youtube: ['Haczyki', 'Krótki skrypt', 'Średni skrypt', 'Captions', 'Thumbnail'],
+    // Captions group: choose platforms for captions
+    tiktok: ['TikTok', 'Instagram', 'YouTube'],
+    // Skrypty group: choose script types
+    youtube: ['Haczyki', 'Krótki skrypt', 'Średni skrypt', 'Thumbnail'],
     linkedin: [],
     x: [],
     facebook: [],
@@ -127,33 +129,12 @@ const PlatformMultiSelect: React.FC<PlatformMultiSelectProps> = ({
         ))}
       </div>
 
-      {/* Content Type Options */}
-      {(selectedPlatforms.instagram || selectedPlatforms.youtube || selectedPlatforms.linkedin || selectedPlatforms.x || selectedPlatforms.blog) && (
+      {/* Content Type Options - only for Captions (tiktok) and Skrypty (youtube) */}
+      {(selectedPlatforms.youtube || selectedPlatforms.tiktok) && (
         <div className="space-y-4">
-          {selectedPlatforms.instagram && (
-            <div>
-              <p className="text-sm font-medium text-muted-foreground mb-2">Opcje Instagram:</p>
-              <div className="flex flex-wrap gap-2">
-                {contentTypeOptions.instagram.map((type) => (
-                  <button
-                    key={type}
-                    onClick={() => handleContentTypeToggle('instagram', type)}
-                    className={`px-4 py-2 rounded-lg text-sm font-medium transition-all duration-300 ${
-                      selectedContentTypes.instagram?.includes(type)
-                        ? 'bg-primary text-primary-foreground'
-                        : 'bg-surface border border-form-container-border hover:border-primary/50'
-                    }`}
-                  >
-                    {type}
-                  </button>
-                ))}
-              </div>
-            </div>
-          )}
-
           {selectedPlatforms.youtube && (
             <div>
-              <p className="text-sm font-medium text-muted-foreground mb-2">Opcje YouTube:</p>
+              <p className="text-sm font-medium text-muted-foreground mb-2">Opcje Skrypty:</p>
               <div className="flex flex-wrap gap-2">
                 {contentTypeOptions.youtube.map((type) => (
                   <button
@@ -172,51 +153,9 @@ const PlatformMultiSelect: React.FC<PlatformMultiSelectProps> = ({
             </div>
           )}
 
-          {selectedPlatforms.linkedin && (
-            <div>
-              <p className="text-sm font-medium text-muted-foreground mb-2">Opcje LinkedIn:</p>
-              <div className="flex flex-wrap gap-2">
-                {contentTypeOptions.linkedin.map((type) => (
-                  <button
-                    key={type}
-                    onClick={() => handleContentTypeToggle('linkedin', type)}
-                    className={`px-4 py-2 rounded-lg text-sm font-medium transition-all duration-300 ${
-                      selectedContentTypes.linkedin?.includes(type)
-                        ? 'bg-primary text-primary-foreground'
-                        : 'bg-surface border border-form-container-border hover:border-primary/50'
-                    }`}
-                  >
-                    {type}
-                  </button>
-                ))}
-              </div>
-            </div>
-          )}
-
-          {selectedPlatforms.x && (
-            <div>
-              <p className="text-sm font-medium text-muted-foreground mb-2">Opcje X:</p>
-              <div className="flex flex-wrap gap-2">
-                {contentTypeOptions.x.map((type) => (
-                  <button
-                    key={type}
-                    onClick={() => handleContentTypeToggle('x', type)}
-                    className={`px-4 py-2 rounded-lg text-sm font-medium transition-all duration-300 ${
-                      selectedContentTypes.x?.includes(type)
-                        ? 'bg-primary text-primary-foreground'
-                        : 'bg-surface border border-form-container-border hover:border-primary/50'
-                    }`}
-                  >
-                    {type}
-                  </button>
-                ))}
-              </div>
-            </div>
-          )}
-
           {selectedPlatforms.tiktok && (
             <div>
-              <p className="text-sm font-medium text-muted-foreground mb-2">Opcje TikTok:</p>
+              <p className="text-sm font-medium text-muted-foreground mb-2">Opcje Captions:</p>
               <div className="flex flex-wrap gap-2">
                 {contentTypeOptions.tiktok.map((type) => (
                   <button
@@ -232,42 +171,6 @@ const PlatformMultiSelect: React.FC<PlatformMultiSelectProps> = ({
                   </button>
                 ))}
               </div>
-            </div>
-          )}
-
-          {selectedPlatforms.facebook && (
-            <div>
-              <p className="text-sm font-medium text-muted-foreground mb-2">Opcje Facebook:</p>
-              <div className="flex flex-wrap gap-2">
-                {contentTypeOptions.facebook.map((type) => (
-                  <button
-                    key={type}
-                    onClick={() => handleContentTypeToggle('facebook', type)}
-                    className={`px-4 py-2 rounded-lg text-sm font-medium transition-all duration-300 ${
-                      selectedContentTypes.facebook?.includes(type)
-                        ? 'bg-primary text-primary-foreground'
-                        : 'bg-surface border border-form-container-border hover:border-primary/50'
-                    }`}
-                  >
-                    {type}
-                  </button>
-                ))}
-              </div>
-            </div>
-          )}
-
-          {selectedPlatforms.blog && (
-            <div>
-              <Label htmlFor="blog-purpose" className="text-sm font-medium text-muted-foreground mb-2 block">
-                Jaki jest cel artykułu?
-              </Label>
-              <Input
-                id="blog-purpose"
-                placeholder="Np. Edukacyjny, promocyjny, informacyjny..."
-                value={blogPurpose || ''}
-                onChange={(e) => onBlogPurposeChange?.(e.target.value)}
-                className="input-field text-white placeholder:text-gray-400"
-              />
             </div>
           )}
         </div>

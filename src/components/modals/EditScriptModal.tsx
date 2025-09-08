@@ -6,7 +6,7 @@ import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { RefreshCw, Upload } from 'lucide-react';
+import { RefreshCw, Upload, Download } from 'lucide-react';
 import { toast } from '@/components/ui/use-toast';
 import { useSettings } from '@/hooks/useSettings';
 import { supabase } from '@/integrations/supabase/client';
@@ -35,7 +35,12 @@ export const EditScriptModal: React.FC<EditScriptModalProps> = ({ script, isOpen
       setTitle(script.title);
       setContent(script.content);
       setScriptType(script.script_type);
-      setImageUrl(script.image_url || '');
+      // Prefer multiple possible fields for thumbnail compatibility
+      // image_url (DB), thumbnail_url/thumbnailUrl (webhook), imageUrl (legacy)
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const rawUrl = (script.image_url || (script as any).image_url_text || (script as any).thumbnail_url || (script as any).thumbnailUrl || (script as any).imageUrl || '') as string;
+      const normalized = typeof rawUrl === 'string' ? rawUrl.trim().replace(/^"|"$/g, '') : '';
+      setImageUrl(normalized);
     }
   }, [script]);
 
@@ -74,6 +79,60 @@ export const EditScriptModal: React.FC<EditScriptModalProps> = ({ script, isOpen
         description: "Nie udało się zregenerować skryptu",
         variant: "destructive",
       });
+    } finally {
+      setRegenerating(false);
+    }
+  };
+
+  const handleRegenerateImage = async () => {
+    if (!script) return;
+    setRegenerating(true);
+    try {
+      const response = await fetch('https://hook.eu2.make.com/lxr7hxctm1s5olq53e29hl9dde9ppmyn', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ 
+          postId: script.id, 
+          type: 'regenerate_image'
+        })
+      });
+      if (response.ok) {
+        toast({ title: 'Sukces', description: 'Obraz zostanie zregenerowany' });
+      }
+    } catch (error) {
+      console.error('Error regenerating image:', error);
+      toast({ title: 'Błąd', description: 'Nie udało się zregenerować obrazu', variant: 'destructive' });
+    } finally {
+      setRegenerating(false);
+    }
+  };
+
+  const handleRegenerateAll = async () => {
+    if (!script) return;
+    setRegenerating(true);
+    try {
+      const response = await fetch('https://hook.eu2.make.com/lxr7hxctm1s5olq53e29hl9dde9ppmyn', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ 
+          źródło: 'regeneruj',
+          postId: script.id, 
+          type: 'regenerate_all',
+          currentTitle: title,
+          currentContent: content,
+          scriptType: scriptType,
+          voiceForPosts: settings.voiceForPosts,
+          voiceForScripts: settings.voiceForScripts, 
+          style: settings.style,
+          avatarRecipient: settings.avatarRecipient
+        })
+      });
+      if (response.ok) {
+        toast({ title: 'Sukces', description: 'Skrypt i obraz zostaną zregenerowane' });
+      }
+    } catch (error) {
+      console.error('Error regenerating all:', error);
+      toast({ title: 'Błąd', description: 'Nie udało się zregenerować', variant: 'destructive' });
     } finally {
       setRegenerating(false);
     }
@@ -138,21 +197,43 @@ export const EditScriptModal: React.FC<EditScriptModalProps> = ({ script, isOpen
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto custom-scrollbar form-container">
+      <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto hide-scrollbar form-container">
         <DialogHeader className="flex flex-row items-center justify-between space-y-0">
           <DialogTitle className="text-2xl font-bold bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
             Edytuj skrypt
           </DialogTitle>
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={handleRegenerate}
-            disabled={regenerating}
-            className="hover:bg-secondary/10 hover:text-secondary text-foreground"
-          >
-            <RefreshCw className={`w-4 h-4 mr-2 ${regenerating ? 'animate-spin' : ''}`} />
-            Regenerate cały skrypt
-          </Button>
+          <div className="flex gap-2">
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={handleRegenerate}
+              disabled={regenerating}
+              className="hover:bg-secondary/10 hover:text-secondary text-foreground"
+            >
+              <RefreshCw className={`w-4 h-4 mr-2 ${regenerating ? 'animate-spin' : ''}`} />
+              Regenerate skrypt
+            </Button>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={handleRegenerateImage}
+              disabled={regenerating}
+              className="hover:bg-secondary/10 hover:text-secondary text-foreground"
+            >
+              <RefreshCw className={`w-4 h-4 mr-2 ${regenerating ? 'animate-spin' : ''}`} />
+              Regenerate obraz
+            </Button>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={handleRegenerateAll}
+              disabled={regenerating}
+              className="hover:bg-primary/10 hover:text-primary text-foreground"
+            >
+              <RefreshCw className={`w-4 h-4 mr-2 ${regenerating ? 'animate-spin' : ''}`} />
+              Regenerate wszystko
+            </Button>
+          </div>
         </DialogHeader>
 
         <div className="space-y-6">
@@ -167,23 +248,7 @@ export const EditScriptModal: React.FC<EditScriptModalProps> = ({ script, isOpen
             />
           </div>
 
-          <div>
-            <Label htmlFor="edit-script-type" className="text-lg font-semibold text-foreground">Status</Label>
-            <Select value={scriptType} onValueChange={setScriptType}>
-              <SelectTrigger className="input-field text-lg p-4 h-12 mt-2 text-white">
-                <SelectValue placeholder="Wybierz typ skryptu" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="Szkic">Szkic</SelectItem>
-                <SelectItem value="Haczyki">Haczyki</SelectItem>
-                <SelectItem value="Krótki Skrypt">Krótki Skrypt</SelectItem>
-                <SelectItem value="Instagram Captions">Instagram Captions</SelectItem>
-                <SelectItem value="YouTube Captions">YouTube Captions</SelectItem>
-                <SelectItem value="TikTok Captions">TikTok Captions</SelectItem>
-                <SelectItem value="Średni skrypt">Średni skrypt</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
+          {/* Ukryto pole status/typ skryptu na prośbę użytkownika */}
 
           <div>
             <div className="flex items-center justify-between mb-2">
@@ -201,41 +266,38 @@ export const EditScriptModal: React.FC<EditScriptModalProps> = ({ script, isOpen
                 id="script-image-upload"
                 disabled={uploadingImage}
               />
-              <label htmlFor="script-image-upload">
-                <Button
-                  type="button"
-                  variant="outline"
-                  size="sm"
-                  disabled={uploadingImage}
-                  className="flex items-center space-x-2"
-                >
-                  {uploadingImage ? (
-                    <>
-                      <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-primary"></div>
-                      <span>Pobieranie...</span>
-                    </>
-                  ) : (
-                    <>
-                      <Upload className="w-4 h-4" />
-                      <span>Pobierz</span>
-                    </>
-                  )}
-                </Button>
-              </label>
+              {/* Usunięto przycisk przesyłania na życzenie użytkownika */}
+              {imageUrl && (
+                <a href={imageUrl} download target="_blank" rel="noopener noreferrer" className="ml-2">
+                  <Button type="button" variant="ghost" size="sm" className="flex items-center space-x-2">
+                    <Download className="w-4 h-4" />
+                    <span>Pobierz</span>
+                  </Button>
+                </a>
+              )}
             </div>
-            {imageUrl && (
-              <div className="mt-3">
+            <div className="mt-3 flex justify-center">
+              {imageUrl ? (
                 <img
                   src={imageUrl}
                   alt="Thumbnail preview"
-                  className="w-full h-64 object-cover rounded-lg border border-form-container-border cursor-pointer hover:opacity-90 transition-opacity"
+                  className="w-full max-w-[560px] h-40 md:h-44 object-cover rounded-lg border border-form-container-border cursor-pointer hover:opacity-90 transition-opacity"
                   onClick={() => setImageModalOpen(true)}
                   onError={(e) => {
+                    // Show subtle placeholder if the URL fails to load
                     e.currentTarget.style.display = 'none';
+                    const placeholder = document.createElement('div');
+                    placeholder.className = 'w-full max-w-[560px] h-40 md:h-44 flex items-center justify-center rounded-lg border border-dashed border-form-container-border text-muted-foreground';
+                    placeholder.textContent = 'Brak miniatury';
+                    e.currentTarget.parentElement?.appendChild(placeholder);
                   }}
                 />
-              </div>
-            )}
+              ) : (
+                <div className="w-full max-w-[560px] h-40 md:h-44 flex items-center justify-center rounded-lg border border-dashed border-form-container-border text-muted-foreground">
+                  Brak miniatury
+                </div>
+              )}
+            </div>
           </div>
 
           <div>
@@ -278,17 +340,6 @@ export const EditScriptModal: React.FC<EditScriptModalProps> = ({ script, isOpen
               alt="Enlarged thumbnail" 
               className="w-full h-auto max-h-[90vh] object-contain"
             />
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={() => setImageModalOpen(false)}
-              className="absolute top-4 right-4 bg-black/50 hover:bg-black/70 text-white"
-            >
-              <span className="sr-only">Close</span>
-              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-              </svg>
-            </Button>
           </div>
         </DialogContent>
       </Dialog>
