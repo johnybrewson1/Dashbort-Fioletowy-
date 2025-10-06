@@ -9,7 +9,9 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { RefreshCw, Upload, Download } from 'lucide-react';
 import { toast } from '@/components/ui/use-toast';
 import { useSettings } from '@/hooks/useSettings';
+import { useSupabaseUser } from '@/hooks/useSupabaseUser';
 import { supabase } from '@/integrations/supabase/client';
+import { InstructionModal } from './InstructionModal';
 import type { Script } from '@/lib/supabase';
 
 interface EditScriptModalProps {
@@ -26,9 +28,17 @@ export const EditScriptModal: React.FC<EditScriptModalProps> = ({ script, isOpen
   const [imageUrl, setImageUrl] = useState('');
   const [uploadingImage, setUploadingImage] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [publishing, setPublishing] = useState(false);
   const [imageModalOpen, setImageModalOpen] = useState(false);
   const [regenerating, setRegenerating] = useState(false);
+  
+  // Instruction modals
+  const [instructionModalOpen, setInstructionModalOpen] = useState(false);
+  const [instructionType, setInstructionType] = useState<'script' | 'image' | 'all'>('script');
+  const [pendingInstructions, setPendingInstructions] = useState<string[]>([]);
+  
   const { settings } = useSettings();
+  const { userId } = useSupabaseUser();
 
   useEffect(() => {
     if (script) {
@@ -47,29 +57,63 @@ export const EditScriptModal: React.FC<EditScriptModalProps> = ({ script, isOpen
   const handleRegenerate = async () => {
     if (!script) return;
     
+    setInstructionType('script');
+    setInstructionModalOpen(true);
+  };
+
+  const handleRegenerateImage = async () => {
+    if (!script) return;
+    
+    setInstructionType('image');
+    setInstructionModalOpen(true);
+  };
+
+  const handleRegenerateAll = async () => {
+    if (!script) return;
+    
+    setInstructionType('all');
+    setInstructionModalOpen(true);
+  };
+
+  const handleInstructionSubmit = async (instructions: string) => {
+    if (!script) return;
+    
     setRegenerating(true);
     try {
-      const response = await fetch('https://hook.eu2.make.com/lxr7hxctm1s5olq53e29hl9dde9ppmyn', {
+      const response = await fetch('https://hook.eu2.make.com/ujque49m1ce27pl79ut5btv34aevg8yl', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ 
-          źródło: 'regeneruj',
-          postId: script.id, 
-          type: 'regenerate_script',
-          currentTitle: title,
-          currentContent: content,
-          scriptType: scriptType,
+        body: JSON.stringify({
+          user_id: userId || "{{user_id}}",
+          source_type: 'regenerate_script',
+          // Wszystkie dane z tabeli scripts
+          record_id: script.id,
+          id: script.id,
+          title: title,
+          content: content,
+          script_type: scriptType,
+          platform: script.platform || 'youtube',
+          status: script.status || 'draft',
+          image_url: imageUrl,
+          created_at: script.created_at,
+          updated_at: new Date().toISOString(),
+          // Instrukcje
+          instructions: instructions,
+          // Dodatkowe pola dla kompatybilności
+          image_prompt: (script as any).image_prompt || '',
           voiceForPosts: settings.voiceForPosts,
           voiceForScripts: settings.voiceForScripts, 
           style: settings.style,
-          avatarRecipient: settings.avatarRecipient
+          avatarRecipient: settings.avatarRecipient,
+          brandDescription: settings.brandDescription,
+          language: settings.language,
         })
       });
       
       if (response.ok) {
         toast({
           title: "Sukces",
-          description: "Skrypt zostanie zregenerowany",
+          description: "Skrypt zostanie zregenerowany z instrukcjami",
         });
       }
     } catch (error) {
@@ -84,55 +128,100 @@ export const EditScriptModal: React.FC<EditScriptModalProps> = ({ script, isOpen
     }
   };
 
-  const handleRegenerateImage = async () => {
+  const handleImageInstructionSubmit = async (instructions: string) => {
     if (!script) return;
+    
     setRegenerating(true);
     try {
-      const response = await fetch('https://hook.eu2.make.com/lxr7hxctm1s5olq53e29hl9dde9ppmyn', {
+      const response = await fetch('https://hook.eu2.make.com/ujque49m1ce27pl79ut5btv34aevg8yl', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ 
-          postId: script.id, 
-          type: 'regenerate_image'
+        body: JSON.stringify({
+          user_id: userId || "{{user_id}}",
+          source_type: 'regenerate_thumbnail',
+          // Wszystkie dane z tabeli scripts
+          record_id: script.id,
+          id: script.id,
+          title: title,
+          content: content,
+          script_type: scriptType,
+          platform: script.platform || 'youtube',
+          status: script.status || 'draft',
+          image_url: imageUrl,
+          created_at: script.created_at,
+          updated_at: new Date().toISOString(),
+          // Instrukcje
+          instructions: instructions,
+          image_prompt: (script as any).image_prompt || ''
         })
       });
+      
       if (response.ok) {
-        toast({ title: 'Sukces', description: 'Obraz zostanie zregenerowany' });
+        toast({
+          title: "Sukces",
+          description: "Obraz zostanie zregenerowany z instrukcjami",
+        });
       }
     } catch (error) {
       console.error('Error regenerating image:', error);
-      toast({ title: 'Błąd', description: 'Nie udało się zregenerować obrazu', variant: 'destructive' });
+      toast({
+        title: "Błąd",
+        description: "Nie udało się zregenerować obrazu",
+        variant: "destructive",
+      });
     } finally {
       setRegenerating(false);
     }
   };
 
-  const handleRegenerateAll = async () => {
+  const handleAllInstructionSubmit = async (instructions: string) => {
     if (!script) return;
+    
     setRegenerating(true);
     try {
-      const response = await fetch('https://hook.eu2.make.com/lxr7hxctm1s5olq53e29hl9dde9ppmyn', {
+      const response = await fetch('https://hook.eu2.make.com/ujque49m1ce27pl79ut5btv34aevg8yl', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ 
-          źródło: 'regeneruj',
-          postId: script.id, 
-          type: 'regenerate_all',
-          currentTitle: title,
-          currentContent: content,
-          scriptType: scriptType,
+        body: JSON.stringify({
+          user_id: userId || "{{user_id}}",
+          source_type: 'regenerate_all',
+          // Wszystkie dane z tabeli scripts
+          record_id: script.id,
+          id: script.id,
+          title: title,
+          content: content,
+          script_type: scriptType,
+          platform: script.platform || 'youtube',
+          status: script.status || 'draft',
+          image_url: imageUrl,
+          created_at: script.created_at,
+          updated_at: new Date().toISOString(),
+          // Instrukcje
+          instructions: instructions,
+          // Dodatkowe pola dla kompatybilności
+          image_prompt: (script as any).image_prompt || '',
           voiceForPosts: settings.voiceForPosts,
           voiceForScripts: settings.voiceForScripts, 
           style: settings.style,
-          avatarRecipient: settings.avatarRecipient
+          avatarRecipient: settings.avatarRecipient,
+          brandDescription: settings.brandDescription,
+          language: settings.language,
         })
       });
+      
       if (response.ok) {
-        toast({ title: 'Sukces', description: 'Skrypt i obraz zostaną zregenerowane' });
+        toast({
+          title: "Sukces",
+          description: "Skrypt i obraz zostaną zregenerowane z instrukcjami",
+        });
       }
     } catch (error) {
       console.error('Error regenerating all:', error);
-      toast({ title: 'Błąd', description: 'Nie udało się zregenerować', variant: 'destructive' });
+      toast({
+        title: "Błąd",
+        description: "Nie udało się zregenerować",
+        variant: "destructive",
+      });
     } finally {
       setRegenerating(false);
     }
@@ -195,60 +284,84 @@ export const EditScriptModal: React.FC<EditScriptModalProps> = ({ script, isOpen
     }
   };
 
+  const handlePublish = async () => {
+    if (!script) return;
+    setPublishing(true);
+    try {
+      // Send to webhook first
+      const webhookResponse = await fetch('https://hook.eu2.make.com/ujque49m1ce27pl79ut5btv34aevg8yl', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          user_id: userId || "{{user_id}}",
+          source_type: 'opublikuj_script',
+          record_id: script.id,
+          id: script.id,
+          title: title,
+          content: content,
+          script_type: scriptType,
+          platform: script.platform || 'youtube',
+          status: script.status || 'draft',
+          image_url: imageUrl,
+          created_at: script.created_at,
+          updated_at: new Date().toISOString(),
+          // Dodatkowe pola
+          tytul: title,
+          tresc_script: content,
+          typ_script: scriptType,
+        })
+      });
+
+      if (webhookResponse.ok) {
+        toast({
+          title: "Sukces",
+          description: "Skrypt został wysłany do publikacji",
+        });
+      }
+
+      // Update local script
+      const updatedScript = {
+        ...script,
+        title,
+        content,
+        script_type: scriptType,
+        image_url: imageUrl,
+        status: 'published'
+      };
+      onSave(updatedScript);
+    } catch (error) {
+      console.error('Error publishing script:', error);
+      toast({
+        title: "Błąd",
+        description: "Nie udało się opublikować skryptu",
+        variant: "destructive",
+      });
+    } finally {
+      setPublishing(false);
+    }
+  };
+
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto hide-scrollbar form-container">
-        <DialogHeader className="flex flex-row items-center justify-between space-y-0">
+        <DialogHeader>
           <DialogTitle className="text-2xl font-bold bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
             Edytuj skrypt
           </DialogTitle>
-          <div className="flex gap-2">
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={handleRegenerate}
-              disabled={regenerating}
-              className="hover:bg-secondary/10 hover:text-secondary text-foreground"
-            >
-              <RefreshCw className={`w-4 h-4 mr-2 ${regenerating ? 'animate-spin' : ''}`} />
-              Regenerate skrypt
-            </Button>
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={handleRegenerateImage}
-              disabled={regenerating}
-              className="hover:bg-secondary/10 hover:text-secondary text-foreground"
-            >
-              <RefreshCw className={`w-4 h-4 mr-2 ${regenerating ? 'animate-spin' : ''}`} />
-              Regenerate obraz
-            </Button>
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={handleRegenerateAll}
-              disabled={regenerating}
-              className="hover:bg-primary/10 hover:text-primary text-foreground"
-            >
-              <RefreshCw className={`w-4 h-4 mr-2 ${regenerating ? 'animate-spin' : ''}`} />
-              Regenerate wszystko
-            </Button>
-          </div>
         </DialogHeader>
 
         <div className="space-y-6">
           <div>
-            <Label htmlFor="edit-script-title" className="text-lg font-semibold text-foreground">Tytuł</Label>
-            <Input
-              id="edit-script-title"
-              value={title}
-              onChange={(e) => setTitle(e.target.value)}
-              placeholder="Tytuł skryptu..."
-              className="input-field text-lg p-4 h-12 mt-2 text-white placeholder:text-gray-400"
+            <Label htmlFor="edit-script-content" className="text-lg font-semibold text-foreground">Treść skryptu</Label>
+            <Textarea
+              id="edit-script-content"
+              value={content}
+              onChange={(e) => setContent(e.target.value)}
+              placeholder="Edytuj treść skryptu..."
+              className="input-field text-lg p-6 min-h-[500px] resize-none mt-2 text-white placeholder:text-gray-400 hide-scrollbar"
+              rows={25}
             />
           </div>
-
-          {/* Ukryto pole status/typ skryptu na prośbę użytkownika */}
 
           <div>
             <div className="flex items-center justify-between mb-2">
@@ -266,34 +379,35 @@ export const EditScriptModal: React.FC<EditScriptModalProps> = ({ script, isOpen
                 id="script-image-upload"
                 disabled={uploadingImage}
               />
-              {/* Usunięto przycisk przesyłania na życzenie użytkownika */}
-              {imageUrl && (
-                <a href={imageUrl} download target="_blank" rel="noopener noreferrer" className="ml-2">
-                  <Button type="button" variant="ghost" size="sm" className="flex items-center space-x-2">
-                    <Download className="w-4 h-4" />
-                    <span>Pobierz</span>
-                  </Button>
-                </a>
-              )}
+              <div className="flex gap-2">
+                {imageUrl && (
+                  <a href={imageUrl} download target="_blank" rel="noopener noreferrer">
+                    <Button type="button" variant="ghost" size="sm" className="flex items-center space-x-2">
+                      <Download className="w-4 h-4" />
+                      <span>Pobierz</span>
+                    </Button>
+                  </a>
+                )}
+              </div>
             </div>
             <div className="mt-3 flex justify-center">
               {imageUrl ? (
                 <img
                   src={imageUrl}
                   alt="Thumbnail preview"
-                  className="w-full max-w-[560px] h-40 md:h-44 object-cover rounded-lg border border-form-container-border cursor-pointer hover:opacity-90 transition-opacity"
+                  className="w-48 h-48 object-cover rounded-lg border border-form-container-border cursor-pointer hover:opacity-90 transition-opacity"
                   onClick={() => setImageModalOpen(true)}
                   onError={(e) => {
                     // Show subtle placeholder if the URL fails to load
                     e.currentTarget.style.display = 'none';
                     const placeholder = document.createElement('div');
-                    placeholder.className = 'w-full max-w-[560px] h-40 md:h-44 flex items-center justify-center rounded-lg border border-dashed border-form-container-border text-muted-foreground';
+                    placeholder.className = 'w-48 h-48 flex items-center justify-center rounded-lg border border-dashed border-form-container-border text-muted-foreground';
                     placeholder.textContent = 'Brak miniatury';
                     e.currentTarget.parentElement?.appendChild(placeholder);
                   }}
                 />
               ) : (
-                <div className="w-full max-w-[560px] h-40 md:h-44 flex items-center justify-center rounded-lg border border-dashed border-form-container-border text-muted-foreground">
+                <div className="w-48 h-48 flex items-center justify-center rounded-lg border border-dashed border-form-container-border text-muted-foreground">
                   Brak miniatury
                 </div>
               )}
@@ -301,31 +415,56 @@ export const EditScriptModal: React.FC<EditScriptModalProps> = ({ script, isOpen
           </div>
 
           <div>
-            <Label htmlFor="edit-script-content" className="text-lg font-semibold text-foreground">Treść skryptu</Label>
-            <Textarea
-              id="edit-script-content"
-              value={content}
-              onChange={(e) => setContent(e.target.value)}
-              placeholder="Edytuj treść skryptu..."
-              className="input-field text-lg p-6 min-h-96 resize-none mt-2 text-white placeholder:text-gray-400"
-              rows={16}
+            <Label htmlFor="edit-script-title" className="text-lg font-semibold text-foreground">Tytuł</Label>
+            <Input
+              id="edit-script-title"
+              value={title}
+              onChange={(e) => setTitle(e.target.value)}
+              placeholder="Tytuł skryptu..."
+              className="input-field text-lg p-4 h-12 mt-2 text-white placeholder:text-gray-400"
             />
           </div>
 
-          <div className="flex justify-end space-x-4">
-            <Button 
-              variant="outline" 
-              onClick={onClose}
-              className="px-6 py-3"
+          {/* Ukryto pole status/typ skryptu na prośbę użytkownika */}
+
+          <div className="flex items-center justify-center gap-3">
+            <Button
+              onClick={handleRegenerate}
+              disabled={regenerating}
+              className="bg-gradient-to-r from-blue-500 to-cyan-400 hover:from-blue-600 hover:to-cyan-500 text-white px-4 py-2 rounded-lg font-medium transition-all duration-300 hover:shadow-lg hover:shadow-blue-500/25 text-sm flex items-center space-x-2"
             >
-              Zamknij
+              <RefreshCw className={`w-4 h-4 ${regenerating ? 'animate-spin' : ''}`} />
+              <span>Regeneruj treść</span>
+            </Button>
+            <Button
+              onClick={handleRegenerateImage}
+              disabled={regenerating}
+              className="bg-gradient-to-r from-green-500 to-emerald-400 hover:from-green-600 hover:to-emerald-500 text-white px-4 py-2 rounded-lg font-medium transition-all duration-300 hover:shadow-lg hover:shadow-green-500/25 text-sm flex items-center space-x-2"
+            >
+              <RefreshCw className={`w-4 h-4 ${regenerating ? 'animate-spin' : ''}`} />
+              <span>Regeneruj obraz</span>
+            </Button>
+            <Button
+              onClick={handleRegenerateAll}
+              disabled={regenerating}
+              className="bg-gradient-to-r from-purple-500 to-pink-400 hover:from-purple-600 hover:to-pink-500 text-white px-4 py-2 rounded-lg font-medium transition-all duration-300 hover:shadow-lg hover:shadow-purple-500/25 text-sm flex items-center space-x-2"
+            >
+              <RefreshCw className={`w-4 h-4 ${regenerating ? 'animate-spin' : ''}`} />
+              <span>Regeneruj wszystko</span>
+            </Button>
+            <Button
+              onClick={handlePublish}
+              disabled={publishing}
+              className="bg-gradient-to-r from-green-500 to-emerald-400 hover:from-green-600 hover:to-emerald-500 text-white px-6 py-3 font-semibold"
+            >
+              {publishing ? 'Publikowanie...' : 'Opublikuj'}
             </Button>
             <Button 
               onClick={handleSave} 
               disabled={loading}
-              className="bg-gradient-to-r from-primary to-accent hover:from-primary/90 hover:to-accent/90 text-primary-foreground font-semibold px-6 py-3"
+              className="bg-gradient-to-r from-blue-500 to-cyan-400 hover:from-blue-600 hover:to-cyan-500 text-white px-6 py-3 font-semibold"
             >
-              {loading ? 'Zapisywanie...' : 'Zapisz'}
+              {loading ? 'Zapisywanie...' : 'Zapisz zmiany'}
             </Button>
           </div>
         </div>
@@ -343,6 +482,17 @@ export const EditScriptModal: React.FC<EditScriptModalProps> = ({ script, isOpen
           </div>
         </DialogContent>
       </Dialog>
+
+      <InstructionModal
+        isOpen={instructionModalOpen}
+        onClose={() => setInstructionModalOpen(false)}
+        onSubmit={instructionType === 'script' ? handleInstructionSubmit : 
+                  instructionType === 'image' ? handleImageInstructionSubmit : 
+                  handleAllInstructionSubmit}
+        title={instructionType === 'script' ? 'Regenerate skrypt' : 
+               instructionType === 'image' ? 'Regenerate obraz' : 
+               'Regenerate wszystko'}
+      />
     </Dialog>
   );
 };

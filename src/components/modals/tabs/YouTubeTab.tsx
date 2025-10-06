@@ -105,8 +105,8 @@ export const YouTubeTab: React.FC<YouTubeTabProps> = ({
 📱 Określ ton i charakter posta"
           value={guidelines}
           onChange={(e) => setGuidelines(e.target.value)}
-          className="input-field text-lg p-4 min-h-[100px] resize-none text-white placeholder:text-gray-400"
-          rows={3}
+          className="input-field text-lg p-4 min-h-[200px] resize-none text-white placeholder:text-gray-400"
+          rows={8}
         />
       </div>
 
@@ -192,7 +192,7 @@ export const YouTubeTab: React.FC<YouTubeTabProps> = ({
         ) : (
           <>
             <Sparkles className="w-5 h-5 mr-2" />
-            Stwórz content z YouTube ✨
+            ✨ Stwórz ✨
           </>
         )}
       </Button>

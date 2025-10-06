@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { TrendingUp, Plus, Trash2, ExternalLink } from 'lucide-react';
@@ -9,7 +9,7 @@ import { toast } from '@/components/ui/use-toast';
 import type { Ranking } from '@/lib/supabase';
 
 export const SupabaseRankingsSection: React.FC = () => {
-  const { rankings, loading, error, loadRankings, deleteRanking } = useSupabaseRankings();
+  const { rankings, loading, error, deleteRanking } = useSupabaseRankings();
   const [selectedRanking, setSelectedRanking] = useState<Ranking | null>(null);
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
 
@@ -63,18 +63,7 @@ export const SupabaseRankingsSection: React.FC = () => {
   return (
     <>
       <Card className="form-container border-form-container-border backdrop-blur-sm">
-        <CardHeader>
-          <CardTitle className="flex items-center space-x-2">
-            <div className="p-2 rounded-lg bg-gradient-to-br from-purple-500 to-pink-400 shadow-platform">
-              <TrendingUp className="h-4 w-4 text-white" />
-            </div>
-            <span className="text-foreground">Rankingi</span>
-            <Badge variant="secondary" className="bg-accent/10 text-accent border-accent/20">
-              {rankings.length}
-            </Badge>
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
+        <CardContent className="p-6">
           <div className="space-y-4">
             {rankings.length === 0 ? (
               <div className="text-center py-8 text-muted-foreground">

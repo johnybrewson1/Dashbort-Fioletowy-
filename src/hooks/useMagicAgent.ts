@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { toast } from '@/components/ui/use-toast';
 import { useSettings } from '@/hooks/useSettings';
+import { useSupabaseUser } from '@/hooks/useSupabaseUser';
 
 interface PlatformSelection {
   instagram: boolean;
@@ -19,12 +20,12 @@ interface ContentTypes {
   linkedin: string[];
   x: string[];
   facebook: string[];
-  blog: string[];
 }
 
 export const useMagicAgent = () => {
   const [content, setContent] = useState('');
   const { settings } = useSettings();
+  const { userId } = useSupabaseUser();
   const [selectedPlatforms, setSelectedPlatforms] = useState<PlatformSelection>({
     instagram: false,
     tiktok: false,
@@ -40,8 +41,7 @@ export const useMagicAgent = () => {
     youtube: [],
     linkedin: [],
     x: [],
-    facebook: [],
-    blog: []
+    facebook: []
   });
   const [imageUrl, setImageUrl] = useState('');
   const [blogPurpose, setBlogPurpose] = useState('');
@@ -65,19 +65,41 @@ export const useMagicAgent = () => {
   };
 
   const buildWebhookPayload = () => {
-    return {
+    console.log('Building webhook payload, userId:', userId);
+    const payload = {
+      user_id: userId || "{{user_id}}",
       źródło: 'magic agent',
       content,
       imageUrl,
       blogPurpose,
-      platforms: selectedPlatforms,
-      contentTypes: selectedContentTypes,
-      useThumbnail,
+      Post: {
+        instagram: selectedPlatforms.instagram,
+        linkedin: selectedPlatforms.linkedin,
+        x: selectedPlatforms.x,
+        facebook: selectedPlatforms.facebook,
+        blog: selectedPlatforms.blog || false
+      },
+      Filmy: {
+        "Haczyki": selectedContentTypes.youtube.includes("Haczyki"),
+        "Thumbnail": useThumbnail,
+        "Krótki skrypt": selectedContentTypes.youtube.includes("Krótki skrypt"),
+        "Średni skrypt": selectedContentTypes.youtube.includes("Średni skrypt")
+      },
+      Captions: {
+        "TikTok": selectedContentTypes.tiktok.includes("TikTok"),
+        "YouTube": selectedContentTypes.tiktok.includes("YouTube"),
+        "Instagram": selectedContentTypes.tiktok.includes("Instagram")
+      },
       voiceForPosts: settings.voiceForPosts,
       voiceForScripts: settings.voiceForScripts, 
       style: settings.style,
-      avatarRecipient: settings.avatarRecipient
+      avatarRecipient: settings.avatarRecipient,
+      brandDescription: settings.brandDescription,
+      language: settings.language
     };
+
+
+    return payload;
   };
 
   const handleSubmit = async (): Promise<boolean> => {
@@ -105,7 +127,7 @@ export const useMagicAgent = () => {
     try {
       const payload = buildWebhookPayload();
       
-      const response = await fetch('https://hook.eu2.make.com/lxr7hxctm1s5olq53e29hl9dde9ppmyn', {
+      const response = await fetch('https://hook.eu2.make.com/ujque49m1ce27pl79ut5btv34aevg8yl', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -137,7 +159,6 @@ export const useMagicAgent = () => {
           linkedin: [],
           x: [],
           facebook: [],
-          blog: [],
         });
         setImageUrl('');
         setBlogPurpose('');

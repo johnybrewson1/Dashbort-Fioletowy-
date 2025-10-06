@@ -1,9 +1,4 @@
 import React, { useState } from 'react';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { supabase } from '@/integrations/supabase/client';
 import { useNavigate } from 'react-router-dom';
 import { toast } from '@/components/ui/use-toast';
@@ -12,6 +7,7 @@ const Auth = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
+  const [isLogin, setIsLogin] = useState(true);
   const navigate = useNavigate();
 
   // Test connection to Supabase
@@ -30,74 +26,57 @@ const Auth = () => {
     testConnection();
   }, []);
 
-  const handleSignIn = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setLoading(true);
-    
-    console.log('Attempting login with:', { email, password: '***' });
-    console.log('Supabase URL:', supabase.supabaseUrl);
-    console.log('Supabase Key:', supabase.supabaseKey?.substring(0, 20) + '...');
-    
-    try {
-      const { data, error } = await supabase.auth.signInWithPassword({
-        email,
-        password,
-      });
-      
-      console.log('Login response:', { data, error });
-      
-      if (error) {
-        toast({
-          title: "Błąd logowania",
-          description: error.message,
-          variant: "destructive",
-        });
-      } else {
-        toast({
-          title: "Sukces",
-          description: "Zalogowano pomyślnie!",
-        });
-        navigate('/dashboard');
-      }
-    } catch (error) {
-      console.error('Login error:', error);
-      toast({
-        title: "Błąd logowania",
-        description: error instanceof Error ? error.message : "Failed to fetch",
-        variant: "destructive",
-      });
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const handleSignUp = async (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
     
     try {
-      const { error } = await supabase.auth.signUp({
-        email,
-        password,
-      });
+      let data, error;
+      
+      if (isLogin) {
+        // Logowanie
+        const result = await supabase.auth.signInWithPassword({
+          email,
+          password,
+        });
+        data = result.data;
+        error = result.error;
+      } else {
+        // Rejestracja
+        const result = await supabase.auth.signUp({
+          email,
+          password,
+        });
+        data = result.data;
+        error = result.error;
+      }
       
       if (error) {
         toast({
-          title: "Błąd rejestracji",
+          title: isLogin ? "Błąd logowania" : "Błąd rejestracji",
           description: error.message,
           variant: "destructive",
         });
       } else {
-        toast({
-          title: "Rejestracja pomyślna",
-          description: "Sprawdź email w celu potwierdzenia konta",
-        });
+        if (isLogin) {
+          toast({
+            title: "Sukces",
+            description: "Zalogowano pomyślnie!",
+          });
+          navigate('/dashboard');
+        } else {
+          toast({
+            title: "Sukces",
+            description: "Konto zostało utworzone! Sprawdź email w celu potwierdzenia.",
+          });
+          setIsLogin(true); // Przełącz na tryb logowania
+        }
       }
     } catch (error) {
-      console.error('Error:', error);
+      console.error('Auth error:', error);
       toast({
-        title: "Błąd rejestracji",
-        description: error instanceof Error ? error.message : "Failed to fetch",
+        title: "Błąd",
+        description: error instanceof Error ? error.message : "Wystąpił błąd",
         variant: "destructive",
       });
     } finally {
@@ -106,82 +85,56 @@ const Auth = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-background via-primary/5 to-secondary/10 flex items-center justify-center p-4">
-      <Card className="w-full max-w-md">
-        <CardHeader>
-          <CardTitle className="text-2xl font-bold text-center">
-            Dashboard Content
-          </CardTitle>
-          <CardDescription className="text-center">
-            Zaloguj się lub załóż konto
-          </CardDescription>
-        </CardHeader>
-        
-        <CardContent>
-          <Tabs defaultValue="signin" className="w-full">
-            <TabsList className="grid w-full grid-cols-2">
-              <TabsTrigger value="signin">Logowanie</TabsTrigger>
-              <TabsTrigger value="signup">Rejestracja</TabsTrigger>
-            </TabsList>
-            
-            <TabsContent value="signin">
-              <form onSubmit={handleSignIn} className="space-y-4">
-                <div className="space-y-2">
-                  <Label htmlFor="email">Email</Label>
-                  <Input
-                    id="email"
-                    type="email"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    required
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="password">Hasło</Label>
-                  <Input
-                    id="password"
-                    type="password"
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    required
-                  />
-                </div>
-                <Button type="submit" className="w-full" disabled={loading}>
-                  {loading ? 'Logowanie...' : 'Zaloguj się'}
-                </Button>
-              </form>
-            </TabsContent>
-            
-            <TabsContent value="signup">
-              <form onSubmit={handleSignUp} className="space-y-4">
-                <div className="space-y-2">
-                  <Label htmlFor="signup-email">Email</Label>
-                  <Input
-                    id="signup-email"
-                    type="email"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    required
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="signup-password">Hasło</Label>
-                  <Input
-                    id="signup-password"
-                    type="password"
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    required
-                  />
-                </div>
-                <Button type="submit" className="w-full" disabled={loading}>
-                  {loading ? 'Rejestracja...' : 'Załóż konto'}
-                </Button>
-              </form>
-            </TabsContent>
-          </Tabs>
-        </CardContent>
-      </Card>
+    <div className="auth-container">
+      <div className="ring">
+        <i style={{'--clr': '#00ffff'}}></i>
+        <i style={{'--clr': '#ff69b4'}}></i>
+        <i style={{'--clr': '#8b5cf6'}}></i>
+        <div className="login">
+          <h2 className="text-4xl font-bold bg-gradient-to-r from-cyan-400 via-pink-500 to-purple-500 bg-clip-text text-transparent">
+            ContentHub
+          </h2>
+          <form onSubmit={handleSubmit} className="w-full space-y-6">
+            <div className="inputBx">
+              <input
+                type="email"
+                placeholder="Email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                required
+                className="w-full px-5 py-3 bg-transparent border-2 border-white rounded-full text-white text-lg placeholder-white/75 focus:outline-none focus:border-cyan-400 transition-colors"
+              />
+            </div>
+            <div className="inputBx">
+              <input
+                type="password"
+                placeholder="Hasło"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                required
+                className="w-full px-5 py-3 bg-transparent border-2 border-white rounded-full text-white text-lg placeholder-white/75 focus:outline-none focus:border-cyan-400 transition-colors"
+              />
+            </div>
+            <div className="inputBx">
+              <input
+                type="submit"
+                value={loading ? (isLogin ? 'Logowanie...' : 'Rejestracja...') : (isLogin ? 'Zaloguj się' : 'Zarejestruj się')}
+                disabled={loading}
+                className="w-full px-5 py-3 bg-gradient-to-r from-cyan-500 via-pink-500 to-purple-500 border-none rounded-full text-white text-lg font-semibold cursor-pointer hover:from-cyan-600 hover:via-pink-600 hover:to-purple-600 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
+              />
+            </div>
+            <div className="text-center mt-4">
+              <button
+                type="button"
+                onClick={() => setIsLogin(!isLogin)}
+                className="text-white/75 hover:text-white text-sm underline transition-colors"
+              >
+                {isLogin ? 'Nie masz konta? Zarejestruj się' : 'Masz już konto? Zaloguj się'}
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
     </div>
   );
 };

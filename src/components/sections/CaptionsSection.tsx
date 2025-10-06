@@ -1,32 +1,23 @@
 import React, { useState, useMemo } from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Edit, Trash2, MessageSquare, Plus } from 'lucide-react';
-import { useSupabaseScripts } from '@/hooks/useSupabaseData';
-import { EditScriptModal } from '@/components/modals/EditScriptModal';
+import { Edit, Trash2, MessageSquare } from 'lucide-react';
+import { useSupabaseCaptions } from '@/hooks/useSupabaseData';
+import { EditCaptionModal } from '@/components/modals/EditCaptionModal';
 import { toast } from '@/components/ui/use-toast';
 import { useSettings } from '@/hooks/useSettings';
-import type { Script } from '@/lib/supabase';
+import type { Caption } from '@/lib/supabase';
 
 export const CaptionsSection: React.FC = () => {
-  const { scripts, loading, error, updateScript, deleteScript } = useSupabaseScripts();
-  const [selectedCaption, setSelectedCaption] = useState<Script | null>(null);
+  const { captions, loading, error, updateCaption, deleteCaption } = useSupabaseCaptions();
+  const [selectedCaption, setSelectedCaption] = useState<Caption | null>(null);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const { settings } = useSettings();
 
-  // Filter scripts to show only captions
-  const captions = useMemo(() => {
-    return scripts.filter(script => 
-      script.script_type === 'Instagram Captions' || 
-      script.script_type === 'YouTube Captions' || 
-      script.script_type === 'TikTok Captions'
-    );
-  }, [scripts]);
-
   const handleDelete = async (captionId: string) => {
     try {
-      await deleteScript(captionId);
+      await deleteCaption(captionId);
       toast({
         title: "Sukces",
         description: "Caption został usunięty",
@@ -41,14 +32,14 @@ export const CaptionsSection: React.FC = () => {
     }
   };
 
-  const handleEdit = (caption: Script) => {
+  const handleEdit = (caption: Caption) => {
     setSelectedCaption(caption);
     setIsEditModalOpen(true);
   };
 
-  const handleSave = async (updatedCaption: Script) => {
+  const handleSave = async (updatedCaption: Caption) => {
     try {
-      await updateScript(updatedCaption.id, updatedCaption);
+      await updateCaption(updatedCaption.id, updatedCaption);
       toast({ title: "Sukces", description: "Caption został zaktualizowany" });
       setIsEditModalOpen(false);
       setSelectedCaption(null);
@@ -85,18 +76,7 @@ export const CaptionsSection: React.FC = () => {
   return (
     <>
       <Card className="form-container border-form-container-border backdrop-blur-sm">
-        <CardHeader>
-          <CardTitle className="flex items-center space-x-2">
-            <div className="p-2 rounded-lg bg-gradient-to-br from-purple-500 to-pink-400 shadow-platform">
-              <MessageSquare className="h-4 w-4 text-white" />
-            </div>
-            <span className="text-foreground">Captions</span>
-            <Badge variant="secondary" className="bg-accent/10 text-accent border-accent/20">
-              {captions.length}
-            </Badge>
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
+        <CardContent className="p-6">
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {captions.length === 0 ? (
               <div className="col-span-full text-center py-8 text-muted-foreground">
@@ -113,7 +93,7 @@ export const CaptionsSection: React.FC = () => {
                   <div className="p-4">
                     <div className="flex items-start justify-between mb-3">
                       <Badge variant="secondary" className="platform-selected text-xs">
-                        {caption.script_type}
+                        {caption.platform || 'Caption'}
                       </Badge>
                       
                       <div className="flex items-center space-x-1 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
@@ -156,7 +136,7 @@ export const CaptionsSection: React.FC = () => {
                       
                       <div className="flex items-center justify-between">
                         <span className="text-xs text-muted-foreground">
-                          {new Date(caption.createdAt).toLocaleDateString('pl-PL')}
+                          {new Date(caption.created_at).toLocaleDateString('pl-PL')}
                         </span>
                         <Badge variant="outline" className="text-xs">
                           draft
@@ -171,8 +151,8 @@ export const CaptionsSection: React.FC = () => {
         </CardContent>
       </Card>
 
-      <EditScriptModal
-        script={selectedCaption}
+      <EditCaptionModal
+        caption={selectedCaption}
         isOpen={isEditModalOpen}
         onClose={() => {
           setIsEditModalOpen(false);

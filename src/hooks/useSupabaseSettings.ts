@@ -24,7 +24,9 @@ export const useSupabaseSettings = () => {
   const updateProfile = async (updates: ProfileUpdate) => {
     try {
       setSaving(true);
+      console.log('updateProfile - Sending updates:', updates);
       const updatedProfile = await profilesService.update(updates);
+      console.log('updateProfile - Received updated profile:', updatedProfile);
       setProfile(updatedProfile);
       
       toast({
@@ -34,7 +36,7 @@ export const useSupabaseSettings = () => {
       
       return true;
     } catch (error) {
-      console.error('Error updating profile:', error);
+      console.error('updateProfile - Error updating profile:', error);
       toast({
         title: "Błąd",
         description: "Nie udało się zapisać ustawień",

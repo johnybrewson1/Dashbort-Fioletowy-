@@ -1,6 +1,6 @@
 import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { FileText, Video, TrendingUp } from 'lucide-react';
+import { FileText, Video, TrendingUp, MessageSquare } from 'lucide-react';
 import { useSupabaseStats } from '@/hooks/useSupabaseData';
 
 export const SupabaseStatsCards: React.FC = () => {
@@ -27,13 +27,20 @@ export const SupabaseStatsCards: React.FC = () => {
       change: '+0%',
       icon: TrendingUp,
       gradient: 'from-purple-500 to-pink-400'
+    },
+    {
+      title: 'Captions',
+      value: stats?.captions_count || '0',
+      change: '+0%',
+      icon: MessageSquare,
+      gradient: 'from-orange-500 to-red-400'
     }
   ];
 
   if (loading) {
     return (
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {[1, 2, 3].map((i) => (
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        {[1, 2, 3, 4].map((i) => (
           <Card key={i} className="form-container border-form-container-border backdrop-blur-sm">
             <CardContent className="p-6">
               <div className="animate-pulse">
@@ -48,7 +55,7 @@ export const SupabaseStatsCards: React.FC = () => {
   }
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
       {statsCards.map((stat, index) => {
         const Icon = stat.icon;
         return (

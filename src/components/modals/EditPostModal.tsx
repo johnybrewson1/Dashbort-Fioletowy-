@@ -11,6 +11,8 @@ import { toast } from '@/components/ui/use-toast';
 import { useSettings } from '@/hooks/useSettings';
 import { supabase } from '@/integrations/supabase/client';
 import type { Post } from '@/lib/supabase';
+import { InstructionModal } from './InstructionModal';
+import { useSupabaseUser } from '@/hooks/useSupabaseUser';
 
 interface EditPostModalProps {
   post: Post | null;
@@ -31,7 +33,20 @@ export const EditPostModal: React.FC<EditPostModalProps> = ({ post, isOpen, onCl
   const [regeneratingAll, setRegeneratingAll] = useState(false);
   const [imageModalOpen, setImageModalOpen] = useState(false);
   const [publishing, setPublishing] = useState(false);
+  
+  // Instruction modals
+  const [instructionModalOpen, setInstructionModalOpen] = useState(false);
+  const [instructionType, setInstructionType] = useState<'post' | 'image' | 'all'>('post');
+  const [pendingInstructions, setPendingInstructions] = useState<string[]>([]);
+  
+  // Two separate modals for "regenerate all"
+  const [postInstructionModalOpen, setPostInstructionModalOpen] = useState(false);
+  const [imageInstructionModalOpen, setImageInstructionModalOpen] = useState(false);
+  const [postInstructions, setPostInstructions] = useState('');
+  const [imageInstructions, setImageInstructions] = useState('');
+  
   const { settings } = useSettings();
+  const { userId } = useSupabaseUser();
 
   useEffect(() => {
     if (post) {
@@ -45,23 +60,57 @@ export const EditPostModal: React.FC<EditPostModalProps> = ({ post, isOpen, onCl
   const handleRegeneratePost = async () => {
     if (!post) return;
     
+    setInstructionType('post');
+    setInstructionModalOpen(true);
+  };
+
+  const handleInstructionSubmit = async (instructions: string) => {
+    if (!post) return;
+    
     setRegeneratingPost(true);
     try {
-      const response = await fetch('https://hook.eu2.make.com/lxr7hxctm1s5olq53e29hl9dde9ppmyn', {
+      const response = await fetch('https://hook.eu2.make.com/ujque49m1ce27pl79ut5btv34aevg8yl', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ 
-          źródło: 'regeneruj',
-          postId: post.id, 
-          type: 'regenerate_post',
-          currentTitle: title,
-          currentContent: content,
+          user_id: userId || "{{user_id}}",
+          source_type: 'regenerate_post',
+          record_id: post.id,
+          id: post.id,
+          title: title,
+          content: content,
           platform: platform,
-          platforma: platform,
+          status: post.status || 'draft',
+          image_url: imageUrl,
+          created_at: post.created_at,
+          updated_at: new Date().toISOString(),
+          // Format Post/Filmy/Captions
+          Post: {
+            instagram: platform?.toLowerCase() === 'instagram',
+            linkedin: platform?.toLowerCase() === 'linkedin',
+            x: platform?.toLowerCase() === 'x',
+            facebook: platform?.toLowerCase() === 'facebook',
+            blog: platform?.toLowerCase() === 'blog'
+          },
+          Filmy: {
+            "Haczyki": false,
+            "Thumbnail": false,
+            "Krótki skrypt": false,
+            "Średni skrypt": false
+          },
+          Captions: {
+            "TikTok": false,
+            "YouTube": false,
+            "Instagram": false
+          },
+          // Ustawienia użytkownika
           voiceForPosts: settings.voiceForPosts,
           voiceForScripts: settings.voiceForScripts, 
           style: settings.style,
-          avatarRecipient: settings.avatarRecipient
+          avatarRecipient: settings.avatarRecipient,
+          brandDescription: settings.brandDescription,
+          language: settings.language,
+          instructions: instructions
         })
       });
       
@@ -86,14 +135,58 @@ export const EditPostModal: React.FC<EditPostModalProps> = ({ post, isOpen, onCl
   const handleRegenerateImage = async () => {
     if (!post) return;
     
+    setInstructionType('image');
+    setInstructionModalOpen(true);
+  };
+
+  const handleImageInstructionSubmit = async (instructions: string) => {
+    if (!post) return;
+    
     setRegeneratingImage(true);
     try {
-      const response = await fetch('https://hook.eu2.make.com/lxr7hxctm1s5olq53e29hl9dde9ppmyn', {
+      const response = await fetch('https://hook.eu2.make.com/ujque49m1ce27pl79ut5btv34aevg8yl', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ 
-          postId: post.id, 
-          type: 'regenerate_image'
+          user_id: userId || "{{user_id}}",
+          source_type: 'regenerate_image',
+          record_id: post.id,
+          id: post.id,
+          title: title,
+          content: content,
+          platform: platform,
+          status: post.status || 'draft',
+          image_url: imageUrl,
+          created_at: post.created_at,
+          updated_at: new Date().toISOString(),
+          // Format Post/Filmy/Captions
+          Post: {
+            instagram: platform?.toLowerCase() === 'instagram',
+            linkedin: platform?.toLowerCase() === 'linkedin',
+            x: platform?.toLowerCase() === 'x',
+            facebook: platform?.toLowerCase() === 'facebook',
+            blog: platform?.toLowerCase() === 'blog'
+          },
+          Filmy: {
+            "Haczyki": false,
+            "Thumbnail": false,
+            "Krótki skrypt": false,
+            "Średni skrypt": false
+          },
+          Captions: {
+            "TikTok": false,
+            "YouTube": false,
+            "Instagram": false
+          },
+          // Ustawienia użytkownika
+          voiceForPosts: settings.voiceForPosts,
+          voiceForScripts: settings.voiceForScripts, 
+          style: settings.style,
+          avatarRecipient: settings.avatarRecipient,
+          brandDescription: settings.brandDescription,
+          language: settings.language,
+          image_prompt: (post as any).image_prompt || '',
+          instructions: instructions
         })
       });
       
@@ -115,29 +208,194 @@ export const EditPostModal: React.FC<EditPostModalProps> = ({ post, isOpen, onCl
     }
   };
 
-  const handleRegenerateAll = async () => {
+  const handleAllInstructionSubmit = async (instructions: string) => {
     if (!post) return;
     
     setRegeneratingAll(true);
     try {
-      const response = await fetch('https://hook.eu2.make.com/lxr7hxctm1s5olq53e29hl9dde9ppmyn', {
+      // Najpierw regeneruj post
+      const postResponse = await fetch('https://hook.eu2.make.com/ujque49m1ce27pl79ut5btv34aevg8yl', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ 
-          źródło: 'regeneruj',
-          postId: post.id, 
-          type: 'regenerate_all',
-          currentTitle: title,
-          currentContent: content,
+          user_id: userId || "{{user_id}}",
+          source_type: 'regenerate_post',
+          record_id: post.id,
+          id: post.id,
+          title: title,
+          content: content,
           platform: platform,
-          platforma: platform,
+          status: post.status || 'draft',
+          image_url: imageUrl,
+          created_at: post.created_at,
+          updated_at: new Date().toISOString(),
+          // Format Post/Filmy/Captions
+          Post: {
+            instagram: platform?.toLowerCase() === 'instagram',
+            linkedin: platform?.toLowerCase() === 'linkedin',
+            x: platform?.toLowerCase() === 'x',
+            facebook: platform?.toLowerCase() === 'facebook',
+            blog: platform?.toLowerCase() === 'blog'
+          },
+          Filmy: {
+            "Haczyki": false,
+            "Thumbnail": false,
+            "Krótki skrypt": false,
+            "Średni skrypt": false
+          },
+          Captions: {
+            "TikTok": false,
+            "YouTube": false,
+            "Instagram": false
+          },
+          // Ustawienia użytkownika
           voiceForPosts: settings.voiceForPosts,
           voiceForScripts: settings.voiceForScripts, 
           style: settings.style,
-          avatarRecipient: settings.avatarRecipient
+          avatarRecipient: settings.avatarRecipient,
+          brandDescription: settings.brandDescription,
+          language: settings.language,
+          instructions: instructions
         })
       });
-      
+
+      if (postResponse.ok) {
+        // Potem regeneruj obraz
+        const imageResponse = await fetch('https://hook.eu2.make.com/ujque49m1ce27pl79ut5btv34aevg8yl', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ 
+            user_id: userId || "{{user_id}}",
+            source_type: 'regenerate_image',
+            record_id: post.id,
+            id: post.id,
+            title: title,
+            content: content,
+            platform: platform,
+            status: post.status || 'draft',
+            image_url: imageUrl,
+            created_at: post.created_at,
+            updated_at: new Date().toISOString(),
+            // Format Post/Filmy/Captions
+            Post: {
+              instagram: platform === 'Instagram',
+              linkedin: platform === 'LinkedIn',
+              x: platform === 'X',
+              facebook: platform === 'Facebook',
+              blog: platform === 'Blog'
+            },
+            Filmy: {
+              "Haczyki": false,
+              "Thumbnail": false,
+              "Krótki skrypt": false,
+              "Średni skrypt": false
+            },
+            Captions: {
+              "TikTok": false,
+              "YouTube": false,
+              "Instagram": false
+            },
+            // Ustawienia użytkownika
+            voiceForPosts: settings.voiceForPosts,
+            voiceForScripts: settings.voiceForScripts, 
+            style: settings.style,
+            avatarRecipient: settings.avatarRecipient,
+            brandDescription: settings.brandDescription,
+            language: settings.language,
+            image_prompt: (post as any).image_prompt || '',
+            instructions: instructions
+          })
+        });
+
+        if (imageResponse.ok) {
+          toast({
+            title: "Sukces",
+            description: "Post i obraz zostaną zregenerowane",
+          });
+        }
+      }
+    } catch (error) {
+      console.error('Error regenerating all:', error);
+      toast({
+        title: "Błąd",
+        description: "Nie udało się zregenerować postu i obrazu",
+        variant: "destructive",
+      });
+    } finally {
+      setRegeneratingAll(false);
+    }
+  };
+
+  const handleRegenerateAll = () => {
+    setPostInstructions('');
+    setImageInstructions('');
+    setPostInstructionModalOpen(true);
+  };
+
+  const handlePostInstructionSubmit = (instructions: string) => {
+    setPostInstructions(instructions);
+    setPostInstructionModalOpen(false);
+    setImageInstructionModalOpen(true);
+  };
+
+  const handleImageInstructionSubmitForAll = async () => {
+    if (!post) return;
+    
+    console.log('Platform value:', platform);
+    console.log('Platform type:', typeof platform);
+    
+    setRegeneratingAll(true);
+    setImageInstructionModalOpen(false);
+    
+    try {
+      const response = await fetch('https://hook.eu2.make.com/ujque49m1ce27pl79ut5btv34aevg8yl', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ 
+          user_id: userId || "{{user_id}}",
+          source_type: 'regenerate_all',
+          record_id: post.id,
+          id: post.id,
+          title: title,
+          content: content,
+          status: post.status || 'draft',
+          image_url: imageUrl,
+          created_at: post.created_at,
+          updated_at: new Date().toISOString(),
+          // Format Post/Filmy/Captions
+          Post: {
+            instagram: platform?.toLowerCase() === 'instagram',
+            linkedin: platform?.toLowerCase() === 'linkedin',
+            x: platform?.toLowerCase() === 'x',
+            facebook: platform?.toLowerCase() === 'facebook',
+            blog: platform?.toLowerCase() === 'blog'
+          },
+          Filmy: {
+            "Haczyki": false,
+            "Thumbnail": false,
+            "Krótki skrypt": false,
+            "Średni skrypt": false
+          },
+          Captions: {
+            "TikTok": false,
+            "YouTube": false,
+            "Instagram": false
+          },
+          // Ustawienia użytkownika
+          voiceForPosts: settings.voiceForPosts,
+          voiceForScripts: settings.voiceForScripts, 
+          style: settings.style,
+          avatarRecipient: settings.avatarRecipient,
+          brandDescription: settings.brandDescription,
+          language: settings.language,
+          image_prompt: (post as any).image_prompt || '',
+          // Instrukcje dla posta i obrazu
+          instructions: postInstructions,
+          image_instructions: imageInstructions,
+          currentContent: content
+        })
+      });
+
       if (response.ok) {
         toast({
           title: "Sukces",
@@ -148,7 +406,7 @@ export const EditPostModal: React.FC<EditPostModalProps> = ({ post, isOpen, onCl
       console.error('Error regenerating all:', error);
       toast({
         title: "Błąd",
-        description: "Nie udało się zregenerować postu",
+        description: "Nie udało się zregenerować postu i obrazu",
         variant: "destructive",
       });
     } finally {
@@ -220,6 +478,45 @@ export const EditPostModal: React.FC<EditPostModalProps> = ({ post, isOpen, onCl
     if (!post) return;
     setPublishing(true);
     try {
+      // Send to webhook first
+      const webhookResponse = await fetch('https://hook.eu2.make.com/ujque49m1ce27pl79ut5btv34aevg8yl', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          user_id: userId || "{{user_id}}",
+          source_type: 'opublikuj',
+          // Wszystkie dane z tabeli posts
+          record_id: post.id,
+          id: post.id,
+          title: title,
+          content: content,
+          platform: platform,
+          status: post.status || 'draft',
+          image_url: imageUrl,
+          created_at: post.created_at,
+          updated_at: new Date().toISOString(),
+          // Dodatkowe pola dla kompatybilności
+          tytul: title,
+          tresc_posta: content,
+          platforma: platform,
+          // Platforma z 4 kategoriami
+          Platforma: {
+            Instagram: platform?.toLowerCase() === 'instagram',
+            Linkedin: platform?.toLowerCase() === 'linkedin',
+            X: platform?.toLowerCase() === 'x',
+            Facebook: platform?.toLowerCase() === 'facebook'
+          }
+        })
+      });
+
+      if (webhookResponse.ok) {
+        toast({
+          title: "Sukces",
+          description: "Post został wysłany do publikacji",
+        });
+      }
+
+      // Update local post
       const updatedPost = {
         ...post,
         title,
@@ -229,6 +526,13 @@ export const EditPostModal: React.FC<EditPostModalProps> = ({ post, isOpen, onCl
         status: 'published'
       };
       onSave(updatedPost);
+    } catch (error) {
+      console.error('Error publishing post:', error);
+      toast({
+        title: "Błąd",
+        description: "Nie udało się opublikować postu",
+        variant: "destructive",
+      });
     } finally {
       setPublishing(false);
     }
@@ -237,76 +541,22 @@ export const EditPostModal: React.FC<EditPostModalProps> = ({ post, isOpen, onCl
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto hide-scrollbar form-container">
-        <DialogHeader className="flex flex-row items-center justify-between space-y-0">
-          <DialogTitle className="text-2xl font-bold bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
-            Edytuj Post
+        <DialogHeader>
+          <DialogTitle className="text-2xl font-bold bg-gradient-to-r from-purple-500 to-pink-500 bg-clip-text text-transparent">
+            Edytuj post
           </DialogTitle>
-          <div className="flex gap-2">
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={handleRegeneratePost}
-              disabled={regeneratingPost}
-              className="hover:bg-secondary/10 hover:text-secondary text-foreground"
-            >
-              <RefreshCw className={`w-4 h-4 mr-2 ${regeneratingPost ? 'animate-spin' : ''}`} />
-              Regenerate post
-            </Button>
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={handleRegenerateImage}
-              disabled={regeneratingImage}
-              className="hover:bg-secondary/10 hover:text-secondary text-foreground"
-            >
-              <Image className={`w-4 h-4 mr-2 ${regeneratingImage ? 'animate-spin' : ''}`} />
-              Regenerate obraz
-            </Button>
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={handleRegenerateAll}
-              disabled={regeneratingAll}
-              className="hover:bg-primary/10 hover:text-primary text-foreground"
-            >
-              <RefreshCw className={`w-4 h-4 mr-2 ${regeneratingAll ? 'animate-spin' : ''}`} />
-              Regenerate wszystko
-            </Button>
-            <Button
-              size="sm"
-              onClick={handlePublish}
-              disabled={publishing}
-              className="bg-primary text-primary-foreground hover:bg-primary/90"
-            >
-              {publishing ? 'Publikowanie...' : 'Opublikuj'}
-            </Button>
-          </div>
         </DialogHeader>
 
         <div className="space-y-6">
           <div>
-            <Label htmlFor="edit-platform" className="text-lg font-semibold text-foreground">Platforma</Label>
-            <Select value={platform} onValueChange={setPlatform}>
-              <SelectTrigger className="input-field text-lg p-4 h-12 mt-2 text-white">
-                <SelectValue placeholder="Wybierz platformę" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="LinkedIn">LinkedIn</SelectItem>
-                <SelectItem value="Instagram">Instagram</SelectItem>
-                <SelectItem value="Facebook">Facebook</SelectItem>
-                <SelectItem value="X">X</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-
-          <div>
-            <Label htmlFor="edit-title" className="text-lg font-semibold text-foreground">Tytuł</Label>
-            <Input
-              id="edit-title"
-              value={title}
-              onChange={(e) => setTitle(e.target.value)}
-              placeholder="Tytuł postu..."
-              className="input-field text-lg p-4 h-12 mt-2 text-white placeholder:text-gray-400"
+            <Label htmlFor="edit-content" className="text-lg font-semibold text-foreground">Treść postu</Label>
+            <Textarea
+              id="edit-content"
+              value={content}
+              onChange={(e) => setContent(e.target.value)}
+              placeholder="Edytuj treść postu..."
+              className="input-field text-lg p-6 min-h-[500px] resize-none mt-2 text-white placeholder:text-gray-400 hide-scrollbar"
+              rows={25}
             />
           </div>
 
@@ -327,43 +577,79 @@ export const EditPostModal: React.FC<EditPostModalProps> = ({ post, isOpen, onCl
                 <img
                   src={imageUrl}
                   alt="Image preview"
-                  className="w-full max-w-[560px] h-40 md:h-44 object-cover rounded-lg border border-form-container-border cursor-pointer hover:opacity-90 transition-opacity"
+                  loading="eager"
+                  referrerPolicy="no-referrer"
+                  className="w-48 h-48 object-cover rounded-lg border border-form-container-border cursor-pointer hover:opacity-90 transition-opacity"
                   onClick={() => setImageModalOpen(true)}
-                  onError={(e) => {
-                    e.currentTarget.style.display = 'none';
-                  }}
                 />
               </div>
             )}
           </div>
 
-
           <div>
-            <Label htmlFor="edit-content" className="text-lg font-semibold text-foreground">Treść postu</Label>
-            <Textarea
-              id="edit-content"
-              value={content}
-              onChange={(e) => setContent(e.target.value)}
-              placeholder="Edytuj treść postu..."
-              className="input-field text-lg p-6 min-h-64 resize-none mt-2 text-white placeholder:text-gray-400"
-              rows={12}
+            <Label htmlFor="edit-title" className="text-lg font-semibold text-foreground">Tytuł</Label>
+            <Input
+              id="edit-title"
+              value={title}
+              onChange={(e) => setTitle(e.target.value)}
+              placeholder="Tytuł postu..."
+              className="input-field text-lg p-4 h-12 mt-2 text-white placeholder:text-gray-400"
             />
           </div>
 
-          <div className="flex justify-end space-x-4">
-            <Button 
-              variant="outline" 
-              onClick={onClose}
-              className="px-6 py-3"
+          <div>
+            <Label htmlFor="edit-platform" className="text-lg font-semibold text-foreground">Platforma</Label>
+            <Select value={platform} onValueChange={setPlatform}>
+              <SelectTrigger className="input-field text-lg p-4 h-12 mt-2 text-white">
+                <SelectValue placeholder="Wybierz platformę" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="LinkedIn">LinkedIn</SelectItem>
+                <SelectItem value="Instagram">Instagram</SelectItem>
+                <SelectItem value="Facebook">Facebook</SelectItem>
+                <SelectItem value="X">X</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+
+          <div className="flex items-center justify-center gap-3 mb-4">
+            <Button
+              onClick={handleRegeneratePost}
+              disabled={regeneratingPost}
+              className="bg-gradient-to-r from-blue-500 to-cyan-400 hover:from-blue-600 hover:to-cyan-500 text-white px-4 py-2 rounded-lg font-medium transition-all duration-300 hover:shadow-lg hover:shadow-blue-500/25 text-sm flex items-center space-x-2"
             >
-              Zamknij
+              <RefreshCw className={`w-4 h-4 ${regeneratingPost ? 'animate-spin' : ''}`} />
+              <span>Regeneruj treść</span>
             </Button>
-            <Button 
-              onClick={handleSave} 
-              disabled={loading}
-              className="bg-gradient-to-r from-primary to-accent hover:from-primary/90 hover:to-accent/90 text-primary-foreground font-semibold px-6 py-3"
+            <Button
+              onClick={handleRegenerateImage}
+              disabled={regeneratingImage}
+              className="bg-gradient-to-r from-green-500 to-emerald-400 hover:from-green-600 hover:to-emerald-500 text-white px-4 py-2 rounded-lg font-medium transition-all duration-300 hover:shadow-lg hover:shadow-green-500/25 text-sm flex items-center space-x-2"
             >
-              {loading ? 'Zapisywanie...' : 'Zapisz'}
+              <RefreshCw className={`w-4 h-4 ${regeneratingImage ? 'animate-spin' : ''}`} />
+              <span>Regeneruj obraz</span>
+            </Button>
+            <Button
+              onClick={handleRegenerateAll}
+              disabled={regeneratingAll}
+              className="bg-gradient-to-r from-purple-500 to-pink-400 hover:from-purple-600 hover:to-pink-500 text-white px-4 py-2 rounded-lg font-medium transition-all duration-300 hover:shadow-lg hover:shadow-purple-500/25 text-sm flex items-center space-x-2"
+            >
+              <RefreshCw className={`w-4 h-4 ${regeneratingAll ? 'animate-spin' : ''}`} />
+              <span>Regeneruj wszystko</span>
+            </Button>
+            <Button
+              onClick={handlePublish}
+              disabled={publishing}
+              className="bg-gradient-to-r from-green-500 to-emerald-400 hover:from-green-600 hover:to-emerald-500 text-white px-6 py-3 font-semibold"
+            >
+              {publishing ? 'Publikowanie...' : 'Opublikuj'}
+            </Button>
+            <Button
+              onClick={handleSave}
+              disabled={loading}
+              className="bg-gradient-to-r from-blue-500 to-cyan-400 hover:from-blue-600 hover:to-cyan-500 text-white px-6 py-3 font-semibold"
+            >
+              {loading ? 'Zapisywanie...' : 'Zapisz zmiany'}
             </Button>
           </div>
         </div>
@@ -381,6 +667,43 @@ export const EditPostModal: React.FC<EditPostModalProps> = ({ post, isOpen, onCl
           </div>
         </DialogContent>
       </Dialog>
+
+      {/* Instruction Modal */}
+      <InstructionModal
+        isOpen={instructionModalOpen}
+        onClose={() => setInstructionModalOpen(false)}
+        onSubmit={instructionType === 'post' ? handleInstructionSubmit : 
+                 instructionType === 'image' ? handleImageInstructionSubmit : 
+                 handleAllInstructionSubmit}
+        title={instructionType === 'post' ? 'Instrukcje dla regeneracji posta' :
+               instructionType === 'image' ? 'Instrukcje dla regeneracji obrazka' :
+               'Instrukcje dla regeneracji wszystkiego'}
+        placeholder={instructionType === 'post' ? 'Wprowadź instrukcje dla regeneracji treści posta...' :
+                   instructionType === 'image' ? 'Wprowadź instrukcje dla regeneracji obrazka...' :
+                   'Wprowadź instrukcje dla regeneracji posta...'}
+      />
+
+      {/* Post Instruction Modal for "Regenerate All" */}
+      <InstructionModal
+        isOpen={postInstructionModalOpen}
+        onClose={() => setPostInstructionModalOpen(false)}
+        onSubmit={handlePostInstructionSubmit}
+        title="Instrukcje dla regeneracji treści posta"
+        placeholder="Wprowadź instrukcje dla regeneracji treści posta..."
+        value={postInstructions}
+        onValueChange={setPostInstructions}
+      />
+
+      {/* Image Instruction Modal for "Regenerate All" */}
+      <InstructionModal
+        isOpen={imageInstructionModalOpen}
+        onClose={() => setImageInstructionModalOpen(false)}
+        onSubmit={handleImageInstructionSubmitForAll}
+        title="Instrukcje dla regeneracji obrazka"
+        placeholder="Wprowadź instrukcje dla regeneracji obrazka..."
+        value={imageInstructions}
+        onValueChange={setImageInstructions}
+      />
     </Dialog>
   );
 };

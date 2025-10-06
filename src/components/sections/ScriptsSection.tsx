@@ -7,6 +7,7 @@ import { EditScriptModal } from '@/components/modals/EditScriptModal';
 import { airtableService, Script } from '@/services/airtable';
 import { toast } from '@/components/ui/use-toast';
 import { useSettings } from '@/hooks/useSettings';
+import { useSupabaseUser } from '@/hooks/useSupabaseUser';
 
 export const ScriptsSection: React.FC = () => {
   const [scripts, setScripts] = useState<Script[]>([]);
@@ -14,6 +15,7 @@ export const ScriptsSection: React.FC = () => {
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [loading, setLoading] = useState(false);
   const { settings } = useSettings();
+  const { userId } = useSupabaseUser();
 
   useEffect(() => {
     loadScripts();
@@ -64,10 +66,11 @@ export const ScriptsSection: React.FC = () => {
     
     setLoading(true);
     try {
-      const response = await fetch('https://hook.eu2.make.com/lxr7hxctm1s5olq53e29hl9dde9ppmyn', {
+      const response = await fetch('https://hook.eu2.make.com/ujque49m1ce27pl79ut5btv34aevg8yl', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ 
+          user_id: userId || "{{user_id}}",
           źródło: 'regeneruj',
           postId: scriptId, 
           type: 'regenerate',
@@ -79,7 +82,9 @@ export const ScriptsSection: React.FC = () => {
           voiceForPosts: settings.voiceForPosts,
           voiceForScripts: settings.voiceForScripts,
           style: settings.style, 
-          avatarRecipient: settings.avatarRecipient
+          avatarRecipient: settings.avatarRecipient,
+          brandDescription: settings.brandDescription,
+          language: settings.language
         })
       });
       

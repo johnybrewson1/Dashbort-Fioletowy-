@@ -6,6 +6,7 @@ import MagicButton from '@/components/MagicButton';
 import { useMagicAgent } from '@/hooks/useMagicAgent';
 import { toast } from '@/components/ui/use-toast';
 import { useSettings } from '@/hooks/useSettings';
+import { useSupabaseUser } from '@/hooks/useSupabaseUser';
 import { airtableService, Ranking } from '@/services/airtable';
 
 interface CreateFromRankingModalProps {
@@ -16,6 +17,7 @@ interface CreateFromRankingModalProps {
 
 export const CreateFromRankingModal: React.FC<CreateFromRankingModalProps> = ({ ranking, isOpen, onClose }) => {
   const { settings } = useSettings();
+  const { userId } = useSupabaseUser();
   const {
     content,
     setContent,
@@ -32,15 +34,6 @@ export const CreateFromRankingModal: React.FC<CreateFromRankingModalProps> = ({ 
   } = useMagicAgent();
 
   const handleSubmit = async () => {
-    if (!content.trim()) {
-      toast({
-        title: "Błąd",
-        description: "Pole treści jest wymagane",
-        variant: "destructive",
-      });
-      return;
-    }
-
     const hasSelectedPlatform = Object.values(selectedPlatforms).some(Boolean);
     if (!hasSelectedPlatform) {
       toast({
@@ -51,30 +44,51 @@ export const CreateFromRankingModal: React.FC<CreateFromRankingModalProps> = ({ 
       return;
     }
 
+    // Debug: Check if ranking has videoUrl
+    console.log('CreateFromRankingModal - Ranking object:', ranking);
+    console.log('CreateFromRankingModal - Video URL from ranking:', ranking?.videoUrl);
+
     try {
       const payload = {
+        user_id: userId || "{{user_id}}",
         źródło: 'ranking',
         content,
         imageUrl,
-        platforms: selectedPlatforms,
-        contentTypes: selectedContentTypes,
+        Post: {
+          instagram: selectedPlatforms.instagram,
+          linkedin: selectedPlatforms.linkedin,
+          x: selectedPlatforms.x,
+          facebook: selectedPlatforms.facebook
+        },
+        Filmy: {
+          "Haczyki": selectedContentTypes.youtube.includes("Haczyki"),
+          "Thumbnail": useThumbnail,
+          "Krótki skrypt": selectedContentTypes.youtube.includes("Krótki skrypt"),
+          "Średni skrypt": selectedContentTypes.youtube.includes("Średni skrypt")
+        },
+        Captions: {
+          "TikTok": selectedContentTypes.tiktok.includes("TikTok"),
+          "YouTube": selectedContentTypes.tiktok.includes("YouTube"),
+          "Instagram": selectedContentTypes.tiktok.includes("Instagram")
+        },
         // Ranking specific data
         rankingId: ranking?.id,
         rankingTitle: ranking?.title,
         rankingRatio: ranking?.ratio,
         rankingVideoUrl: ranking?.videoUrl,
         // Thumbnail data
-        useThumbnail,
         thumbnailUrl: useThumbnail ? ranking?.thumbnailUrl : undefined,
         // Additional webhook data as requested
         voiceForPosts: settings.voiceForPosts,
         voiceForScripts: settings.voiceForScripts,
         style: settings.style,
         avatarRecipient: settings.avatarRecipient,
-        type: 'create_from_ranking'
+        brandDescription: settings.brandDescription,
+        language: settings.language,
+        type: 'create_from_ranking',
       };
       
-      const response = await fetch('https://hook.eu2.make.com/lxr7hxctm1s5olq53e29hl9dde9ppmyn', {
+      const response = await fetch('https://hook.eu2.make.com/ujque49m1ce27pl79ut5btv34aevg8yl', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

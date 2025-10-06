@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
-import { postsService, scriptsService, rankingsService, analyticsService } from '@/lib/supabase';
-import type { Post, Script, Ranking } from '@/lib/supabase';
+import { postsService, scriptsService, rankingsService, captionsService, analyticsService } from '@/lib/supabase';
+import type { Post, Script, Ranking, Caption } from '@/lib/supabase';
 import { supabase } from '@/integrations/supabase/client';
 
 export const useSupabasePosts = () => {
@@ -256,7 +256,9 @@ export const useSupabaseStats = () => {
   const loadStats = async () => {
     try {
       setLoading(true);
+      console.log('Loading stats...');
       const data = await analyticsService.getUserStats();
+      console.log('Stats loaded:', data);
       setStats(data);
     } catch (err) {
       console.error('Error loading stats:', err);
@@ -273,5 +275,96 @@ export const useSupabaseStats = () => {
     stats,
     loading,
     loadStats
+  };
+};
+
+export const useSupabaseCaptions = () => {
+  const [captions, setCaptions] = useState<Caption[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  const loadCaptions = async () => {
+    try {
+      setLoading(true);
+      
+      // Debug: Check current user
+      const { data: { user } } = await supabase.auth.getUser();
+      console.log('loadCaptions - Current user for captions:', user);
+      console.log('loadCaptions - User ID:', user?.id);
+      
+      if (!user) {
+        console.log('loadCaptions - No user found, setting empty captions');
+        setCaptions([]);
+        setError('Użytkownik nie jest zalogowany');
+        return;
+      }
+
+      const data = await captionsService.getAll();
+      console.log('loadCaptions - Loaded captions:', data);
+      console.log('loadCaptions - Number of captions:', data?.length || 0);
+      setCaptions(data || []);
+      setError(null);
+    } catch (err) {
+      console.error('loadCaptions - Error loading captions:', err);
+      setError(err instanceof Error ? err.message : 'Failed to load captions');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const createCaption = async (caption: Omit<Caption, 'id' | 'created_at' | 'updated_at' | 'deleted_at'>) => {
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) throw new Error('Not authenticated');
+
+      const newCaption = await captionsService.create({
+        ...caption,
+        user_id: user.id
+      });
+      
+      setCaptions(prev => [newCaption, ...prev]);
+      await analyticsService.logEvent('captions', newCaption.id, 'created', caption.platform);
+      return newCaption;
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to create caption');
+      throw err;
+    }
+  };
+
+  const updateCaption = async (id: string, updates: Partial<Caption>) => {
+    try {
+      const updatedCaption = await captionsService.update(id, updates);
+      setCaptions(prev => prev.map(c => c.id === id ? updatedCaption : c));
+      await analyticsService.logEvent('captions', id, 'updated', updates.platform);
+      return updatedCaption;
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to update caption');
+      throw err;
+    }
+  };
+
+  const deleteCaption = async (id: string) => {
+    try {
+      await captionsService.delete(id);
+      setCaptions(prev => prev.filter(c => c.id !== id));
+      await analyticsService.logEvent('captions', id, 'deleted');
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to delete caption');
+      throw err;
+    }
+  };
+
+  useEffect(() => {
+    loadCaptions();
+  }, []);
+
+  return {
+    captions,
+    loading,
+    error,
+    loadCaptions,
+    createCaption,
+    updateCaption,
+    deleteCaption
   };
 };

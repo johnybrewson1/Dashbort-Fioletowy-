@@ -6,21 +6,28 @@ import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Settings, Save, Mic, FileText, Palette, Users } from 'lucide-react';
+import { Switch } from '@/components/ui/switch';
+import { Settings, Save, Mic, FileText, Palette, Users, Languages, Hash } from 'lucide-react';
 import { useSupabaseSettings } from '@/hooks/useSupabaseSettings';
+import { useSettings } from '@/hooks/useSettings';
 import { supabase } from '@/integrations/supabase/client';
+import { toast } from '@/components/ui/use-toast';
 
 export const SupabaseSettingsSection: React.FC = () => {
   const { profile, loading, saving, updateProfile } = useSupabaseSettings();
+  const { refetch: refetchSettings } = useSettings();
   const [formData, setFormData] = useState({
     name: '',
     voice_for_posts: '',
     voice_for_scripts: '',
     style: '',
     avatar_recipient: '',
-    subscription_plan: 'free'
+    brand_description: '',
+    seo_keywords: '',
+    language: 'PL'
   });
   const [userEmail, setUserEmail] = useState('');
+  const [userName, setUserName] = useState('');
   const [expandedField, setExpandedField] = useState<string | null>(null);
 
   useEffect(() => {
@@ -30,21 +37,31 @@ export const SupabaseSettingsSection: React.FC = () => {
   useEffect(() => {
     if (profile) {
       setFormData({
-        name: profile.name || '',
+        name: userName || userEmail || '',
         voice_for_posts: profile.voice_for_posts || '',
         voice_for_scripts: profile.voice_for_scripts || '',
         style: profile.style || '',
         avatar_recipient: profile.avatar_recipient || '',
-        subscription_plan: profile.subscription_plan || 'free'
+        brand_description: profile.brand_description || '',
+        seo_keywords: profile.seo_keywords || '',
+        language: profile.language || 'PL'
       });
     }
-  }, [profile]);
+  }, [profile, userName, userEmail]);
 
   const loadUserEmail = async () => {
     try {
       const { data: { user } } = await supabase.auth.getUser();
       if (user) {
         setUserEmail(user.email || '');
+        // Try to get name from user_metadata or raw_user_meta_data
+        const name = user.user_metadata?.full_name || 
+                    user.user_metadata?.name || 
+                    user.raw_user_meta_data?.full_name || 
+                    user.raw_user_meta_data?.name || 
+                    user.email?.split('@')[0] || 
+                    'Użytkownik';
+        setUserName(name);
       }
     } catch (error) {
       console.error('Error loading user email:', error);
@@ -52,9 +69,37 @@ export const SupabaseSettingsSection: React.FC = () => {
   };
 
   const handleSave = async () => {
-    const success = await updateProfile(formData);
-    if (success) {
-      // Optionally reload or update local state
+    try {
+      const profileData: any = {
+        voice_for_posts: formData.voice_for_posts,
+        voice_for_scripts: formData.voice_for_scripts,
+        style: formData.style,
+        avatar_recipient: formData.avatar_recipient,
+        language: formData.language
+      };
+      
+      // Only add brand_description if it's not empty
+      if (formData.brand_description && formData.brand_description.trim()) {
+        profileData.brand_description = formData.brand_description;
+      }
+      
+          // Only add seo_keywords if it's not empty
+          if (formData.seo_keywords && formData.seo_keywords.trim()) {
+            profileData.seo_keywords = formData.seo_keywords;
+          }
+      
+      const success = await updateProfile(profileData);
+      if (success) {
+        // Refresh settings for webhook payloads
+        await refetchSettings();
+      }
+    } catch (error) {
+      console.error('Error saving profile:', error);
+      toast({
+        title: "Błąd",
+        description: "Nie udało się zapisać ustawień. Sprawdź konsolę dla szczegółów.",
+        variant: "destructive",
+      });
     }
   };
 
@@ -137,23 +182,9 @@ export const SupabaseSettingsSection: React.FC = () => {
             </div>
           </div>
 
-          {/* Subscription Plan */}
-          <div className="space-y-2">
-            <Label htmlFor="subscription" className="text-lg font-semibold">Plan subskrypcji</Label>
-            <Select value={formData.subscription_plan} onValueChange={(value) => handleInputChange('subscription_plan', value)}>
-              <SelectTrigger className="input-field text-lg p-4 h-12">
-                <SelectValue placeholder="Wybierz plan" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="free">Free</SelectItem>
-                <SelectItem value="pro">Pro</SelectItem>
-                <SelectItem value="enterprise">Enterprise</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
 
           {/* Settings Icons Grid */}
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+          <div className="grid grid-cols-2 md:grid-cols-6 gap-4">
             {/* Voice for Posts */}
             <div 
               className={`group relative bg-card/50 border border-form-container-border rounded-lg hover:bg-card/80 hover:border-primary/30 hover:shadow-lg hover:shadow-primary/10 transition-all duration-300 cursor-pointer transform hover:scale-105 ${
@@ -190,24 +221,6 @@ export const SupabaseSettingsSection: React.FC = () => {
               </div>
             </div>
 
-            {/* Style */}
-            <div 
-              className={`group relative bg-card/50 border border-form-container-border rounded-lg hover:bg-card/80 hover:border-primary/30 hover:shadow-lg hover:shadow-primary/10 transition-all duration-300 cursor-pointer transform hover:scale-105 ${
-                expandedField === 'style' ? 'ring-2 ring-primary bg-primary/10' : ''
-              }`}
-              onClick={() => handleIconClick('style')}
-            >
-              <div className="p-6 flex flex-col items-center space-y-3">
-                <div className="p-3 rounded-full bg-gradient-to-br from-pink-500 to-rose-500 shadow-lg">
-                  <Palette className="w-6 h-6 text-white" />
-                </div>
-                <div className="text-center">
-                  <h3 className="font-semibold text-sm text-foreground">Styl</h3>
-                  <p className="text-xs text-muted-foreground mt-1">Preferencje twórcze</p>
-                </div>
-              </div>
-            </div>
-
             {/* Avatar odbiorcy */}
             <div 
               className={`group relative bg-card/50 border border-form-container-border rounded-lg hover:bg-card/80 hover:border-primary/30 hover:shadow-lg hover:shadow-primary/10 transition-all duration-300 cursor-pointer transform hover:scale-105 ${
@@ -224,6 +237,76 @@ export const SupabaseSettingsSection: React.FC = () => {
                   <p className="text-xs text-muted-foreground mt-1">Grupa docelowa</p>
                 </div>
               </div>
+            </div>
+
+            {/* Styl */}
+            <div 
+              className={`group relative bg-card/50 border border-form-container-border rounded-lg hover:bg-card/80 hover:border-primary/30 hover:shadow-lg hover:shadow-primary/10 transition-all duration-300 cursor-pointer transform hover:scale-105 ${
+                expandedField === 'style' ? 'ring-2 ring-primary bg-primary/10' : ''
+              }`}
+              onClick={() => handleIconClick('style')}
+            >
+              <div className="p-6 flex flex-col items-center space-y-3">
+                <div className="p-3 rounded-full bg-gradient-to-br from-purple-500 to-pink-500 shadow-lg">
+                  <Palette className="w-6 h-6 text-white" />
+                </div>
+                <div className="text-center">
+                  <h3 className="font-semibold text-sm text-foreground">Styl</h3>
+                  <p className="text-xs text-muted-foreground mt-1">Preferencje twórcze</p>
+                </div>
+              </div>
+            </div>
+
+            {/* Opis mojej marki */}
+            <div 
+              className={`group relative bg-card/50 border border-form-container-border rounded-lg hover:bg-card/80 hover:border-primary/30 hover:shadow-lg hover:shadow-primary/10 transition-all duration-300 cursor-pointer transform hover:scale-105 ${
+                expandedField === 'brand_description' ? 'ring-2 ring-primary bg-primary/10' : ''
+              }`}
+              onClick={() => handleIconClick('brand_description')}
+            >
+              <div className="p-6 flex flex-col items-center space-y-3">
+                <div className="p-3 rounded-full bg-gradient-to-br from-indigo-500 to-blue-500 shadow-lg">
+                  <Settings className="w-6 h-6 text-white" />
+                </div>
+                <div className="text-center">
+                  <h3 className="font-semibold text-sm text-foreground">Opis mojej marki</h3>
+                  <p className="text-xs text-muted-foreground mt-1">Tożsamość marki</p>
+                </div>
+              </div>
+            </div>
+
+            {/* Słowa kluczowe SEO */}
+            <div 
+              className={`group relative bg-card/50 border border-form-container-border rounded-lg hover:bg-card/80 hover:border-primary/30 hover:shadow-lg hover:shadow-primary/10 transition-all duration-300 cursor-pointer transform hover:scale-105 ${
+                expandedField === 'seo_keywords' ? 'ring-2 ring-primary bg-primary/10' : ''
+              }`}
+              onClick={() => handleIconClick('seo_keywords')}
+            >
+              <div className="p-6 flex flex-col items-center space-y-3">
+                <div className="p-3 rounded-full bg-gradient-to-br from-emerald-500 to-teal-500 shadow-lg">
+                  <Hash className="w-6 h-6 text-white" />
+                </div>
+                <div className="text-center">
+                  <h3 className="font-semibold text-sm text-foreground">Słowa kluczowe SEO</h3>
+                  <p className="text-xs text-muted-foreground mt-1">Optymalizacja wyszukiwarek</p>
+                </div>
+              </div>
+            </div>
+
+            {/* Język - mały przełącznik */}
+            <div className="flex items-center justify-between p-4 bg-card/30 border border-form-container-border rounded-lg">
+              <div className="flex items-center space-x-3">
+                <Languages className="w-5 h-5 text-foreground" />
+                <span className="text-lg font-medium text-foreground">Język</span>
+                <span className="text-sm text-muted-foreground">
+                  {formData.language === 'PL' ? '🇵🇱 Polski' : '🇬🇧 English'}
+                </span>
+              </div>
+              <Switch
+                checked={formData.language === 'ENG'}
+                onCheckedChange={(checked) => handleInputChange('language', checked ? 'ENG' : 'PL')}
+                className="data-[state=checked]:bg-gradient-to-r data-[state=checked]:from-cyan-500 data-[state=checked]:to-blue-500"
+              />
             </div>
           </div>
 
@@ -264,22 +347,6 @@ export const SupabaseSettingsSection: React.FC = () => {
                 </div>
               )}
 
-              {expandedField === 'style' && (
-                <div className="space-y-2">
-                  <Label htmlFor="style" className="text-lg font-semibold flex items-center space-x-2">
-                    <Palette className="w-5 h-5" />
-                    <span>Styl</span>
-                  </Label>
-                  <Textarea
-                    id="style"
-                    placeholder="Opisz swój ogólny styl i preferencje twórcze..."
-                    value={formData.style}
-                    onChange={(e) => handleInputChange('style', e.target.value)}
-                    className="input-field text-lg p-6 min-h-32 resize-none"
-                    rows={6}
-                  />
-                </div>
-              )}
 
               {expandedField === 'avatar_recipient' && (
                 <div className="space-y-2">
@@ -297,8 +364,65 @@ export const SupabaseSettingsSection: React.FC = () => {
                   />
                 </div>
               )}
+
+              {expandedField === 'style' && (
+                <div className="space-y-2">
+                  <Label htmlFor="style" className="text-lg font-semibold flex items-center space-x-2">
+                    <Palette className="w-5 h-5" />
+                    <span>Styl</span>
+                  </Label>
+                  <Textarea
+                    id="style"
+                    placeholder="Opisz swój ogólny styl i preferencje twórcze..."
+                    value={formData.style}
+                    onChange={(e) => handleInputChange('style', e.target.value)}
+                    className="input-field text-lg p-6 min-h-32 resize-none"
+                    rows={6}
+                  />
+                </div>
+              )}
+
+              {expandedField === 'brand_description' && (
+                <div className="space-y-2">
+                  <Label htmlFor="brandDescription" className="text-lg font-semibold flex items-center space-x-2">
+                    <Settings className="w-5 h-5" />
+                    <span>Opis mojej marki</span>
+                  </Label>
+                  <Textarea
+                    id="brandDescription"
+                    placeholder="Opisz swoją markę, wartości, misję i tożsamość..."
+                    value={formData.brand_description}
+                    onChange={(e) => handleInputChange('brand_description', e.target.value)}
+                    className="input-field text-lg p-6 min-h-32 resize-none"
+                    rows={6}
+                  />
+                </div>
+              )}
+
+              {expandedField === 'seo_keywords' && (
+                <div className="space-y-2">
+                  <Label htmlFor="seoKeywords" className="text-lg font-semibold flex items-center space-x-2">
+                    <Hash className="w-5 h-5" />
+                    <span>Słowa kluczowe SEO</span>
+                  </Label>
+                  <Textarea
+                    id="seoKeywords"
+                    placeholder="Wprowadź słowa kluczowe oddzielone przecinkami, np: marketing, social media, content, branding..."
+                    value={formData.seo_keywords}
+                    onChange={(e) => handleInputChange('seo_keywords', e.target.value)}
+                    className="input-field text-lg p-6 min-h-32 resize-none"
+                    rows={6}
+                  />
+                  <p className="text-sm text-muted-foreground">
+                    💡 Wskazówka: Używaj słów kluczowych związanych z Twoją branżą, produktami i usługami. 
+                    Pomogą one w lepszym pozycjonowaniu Twoich treści w wyszukiwarkach.
+                  </p>
+                </div>
+              )}
+
             </div>
           )}
+
 
           <Button 
             onClick={handleSave}

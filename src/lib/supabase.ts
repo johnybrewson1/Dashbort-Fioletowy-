@@ -17,12 +17,20 @@ export type RankingUpdate = Database['public']['Tables']['rankings']['Update'];
 export type Profile = Database['public']['Tables']['profiles']['Row'];
 export type ProfileUpdate = Database['public']['Tables']['profiles']['Update'];
 
+export type Caption = Database['public']['Tables']['captions']['Row'];
+export type CaptionInsert = Database['public']['Tables']['captions']['Insert'];
+export type CaptionUpdate = Database['public']['Tables']['captions']['Update'];
+
 // Posts service
 export const postsService = {
   async getAll() {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) throw new Error('Not authenticated');
+
     const { data, error } = await supabase
       .from('posts')
       .select('*')
+      .eq('user_id', user.id)
       .is('deleted_at', null)
       .order('created_at', { ascending: false });
     
@@ -87,9 +95,13 @@ export const postsService = {
 // Scripts service
 export const scriptsService = {
   async getAll() {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) throw new Error('Not authenticated');
+
     const { data, error } = await supabase
       .from('scripts')
       .select('*')
+      .eq('user_id', user.id)
       .is('deleted_at', null)
       .order('created_at', { ascending: false });
     
@@ -145,9 +157,13 @@ export const scriptsService = {
 // Rankings service
 export const rankingsService = {
   async getAll() {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) throw new Error('Not authenticated');
+
     const { data, error } = await supabase
       .from('rankings')
       .select('*')
+      .eq('user_id', user.id)
       .is('deleted_at', null)
       .order('ratio', { ascending: false });
     
@@ -216,9 +232,12 @@ export const profilesService = {
     return data;
   },
 
-  async update(updates: ProfileUpdate) {
+  async update(updates: ProfileUpdate | any) {
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) throw new Error('Not authenticated');
+
+    console.log('profilesService.update - User:', user.id);
+    console.log('profilesService.update - Updates:', updates);
 
     const { data, error } = await supabase
       .from('profiles')
@@ -227,8 +246,67 @@ export const profilesService = {
       .select()
       .single();
     
+    console.log('profilesService.update - Response data:', data);
+    console.log('profilesService.update - Response error:', error);
+    
     if (error) throw error;
     return data;
+  }
+};
+
+// Captions service
+export const captionsService = {
+  async getAll() {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) throw new Error('Not authenticated');
+
+    const { data, error } = await supabase
+      .from('captions')
+      .select('*')
+      .eq('user_id', user.id)
+      .is('deleted_at', null)
+      .order('created_at', { ascending: false });
+
+    if (error) throw error;
+    return data;
+  },
+
+  async create(caption: CaptionInsert) {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) throw new Error('Not authenticated');
+
+    const { data, error } = await supabase
+      .from('captions')
+      .insert({
+        ...caption,
+        user_id: user.id
+      })
+      .select()
+      .single();
+    
+    if (error) throw error;
+    return data;
+  },
+
+  async update(id: string, updates: CaptionUpdate) {
+    const { data, error } = await supabase
+      .from('captions')
+      .update(updates)
+      .eq('id', id)
+      .select()
+      .single();
+    
+    if (error) throw error;
+    return data;
+  },
+
+  async delete(id: string) {
+    const { error } = await supabase
+      .from('captions')
+      .update({ deleted_at: new Date().toISOString() })
+      .eq('id', id);
+    
+    if (error) throw error;
   }
 };
 
@@ -255,17 +333,8 @@ export const analyticsService = {
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) return;
 
-    const { error } = await supabase
-      .rpc('log_analytics_event', {
-        p_user_id: user.id,
-        p_content_type: contentType,
-        p_content_id: contentId,
-        p_event_type: eventType,
-        p_platform: platform,
-        p_metadata: metadata || {}
-      });
-    
-    if (error) console.error('Error logging analytics:', error);
+    // TODO: Implement analytics function in database
+    console.log('Analytics event:', { contentType, contentId, eventType, platform, metadata });
   }
 };
 

@@ -20,24 +20,45 @@ export type Database = {
           id: string
           target_audience: string | null
           tone_of_voice: string | null
+          brand_description: string | null
+          language: string | null
+          seo_keywords: string | null
           updated_at: string
           user_id: string
+          voice_for_posts: string | null
+          voice_for_scripts: string | null
+          style: string | null
+          avatar_recipient: string | null
         }
         Insert: {
           created_at?: string
           id?: string
           target_audience?: string | null
           tone_of_voice?: string | null
+          brand_description?: string | null
+          language?: string | null
+          seo_keywords?: string | null
           updated_at?: string
           user_id: string
+          voice_for_posts?: string | null
+          voice_for_scripts?: string | null
+          style?: string | null
+          avatar_recipient?: string | null
         }
         Update: {
           created_at?: string
           id?: string
           target_audience?: string | null
           tone_of_voice?: string | null
+          brand_description?: string | null
+          language?: string | null
+          seo_keywords?: string | null
           updated_at?: string
           user_id?: string
+          voice_for_posts?: string | null
+          voice_for_scripts?: string | null
+          style?: string | null
+          avatar_recipient?: string | null
         }
         Relationships: []
       }
@@ -170,6 +191,45 @@ export type Database = {
         }
         Relationships: []
       }
+    }
+    captions: {
+      Row: {
+        id: string
+        user_id: string
+        title: string
+        content: string
+        platform: string | null
+        status: string
+        image_url: string | null
+        created_at: string
+        updated_at: string
+        deleted_at: string | null
+      }
+      Insert: {
+        id?: string
+        user_id: string
+        title: string
+        content: string
+        platform?: string | null
+        status?: string
+        image_url?: string | null
+        created_at?: string
+        updated_at?: string
+        deleted_at?: string | null
+      }
+      Update: {
+        id?: string
+        user_id?: string
+        title?: string
+        content?: string
+        platform?: string | null
+        status?: string
+        image_url?: string | null
+        created_at?: string
+        updated_at?: string
+        deleted_at?: string | null
+      }
+      Relationships: []
     }
     Views: {
       [_ in never]: never

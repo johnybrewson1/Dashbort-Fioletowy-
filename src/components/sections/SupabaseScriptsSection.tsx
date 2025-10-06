@@ -1,5 +1,5 @@
 import React, { useState, useMemo } from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Edit, Trash2, Code, Plus } from 'lucide-react';
@@ -10,7 +10,7 @@ import { useSettings } from '@/hooks/useSettings';
 import type { Script } from '@/lib/supabase';
 
 export const SupabaseScriptsSection: React.FC = () => {
-  const { scripts, loading, error, loadScripts, updateScript, deleteScript } = useSupabaseScripts();
+  const { scripts, loading, error, updateScript, deleteScript } = useSupabaseScripts();
   const [selectedScript, setSelectedScript] = useState<Script | null>(null);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const { settings } = useSettings();
@@ -94,18 +94,7 @@ export const SupabaseScriptsSection: React.FC = () => {
   return (
     <>
       <Card className="form-container border-form-container-border backdrop-blur-sm">
-        <CardHeader>
-          <CardTitle className="flex items-center space-x-2">
-            <div className="p-2 rounded-lg bg-gradient-to-br from-green-500 to-emerald-400 shadow-platform">
-              <Code className="h-4 w-4 text-white" />
-            </div>
-            <span className="text-foreground">Skrypty</span>
-            <Badge variant="secondary" className="bg-accent/10 text-accent border-accent/20">
-              {filteredScripts.length}
-            </Badge>
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
+        <CardContent className="p-6">
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {filteredScripts.length === 0 ? (
               <div className="col-span-full text-center py-8 text-muted-foreground">

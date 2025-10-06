@@ -27,8 +27,8 @@ const MagicContentInput: React.FC<MagicContentInputProps> = ({ value, onChange, 
         placeholder={getPlaceholder()}
         value={value}
         onChange={(e) => onChange(e.target.value)}
-        className="input-field text-lg p-6 min-h-32 resize-none border-2 hover:border-primary/50 focus:border-primary transition-all duration-300"
-        rows={8}
+        className="input-field text-lg p-6 min-h-[200px] resize-none border-2 hover:border-primary/50 focus:border-primary transition-all duration-300"
+        rows={10}
       />
     </div>
   );

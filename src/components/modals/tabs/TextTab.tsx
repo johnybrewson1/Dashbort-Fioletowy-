@@ -93,7 +93,7 @@ export const TextTab: React.FC<TextTabProps> = ({
         <Label htmlFor="content-input" className="text-lg font-semibold text-foreground mb-3 block">
           Wpisz swoją treść
         </Label>
-        <Textarea id="content-input" placeholder="Opisz o czym chcesz stworzyć content..." value={content} onChange={e => setContent(e.target.value)} className="input-field text-lg p-6 min-h-32 resize-none text-white placeholder:text-gray-400" rows={4} />
+        <Textarea id="content-input" placeholder="Opisz o czym chcesz stworzyć content..." value={content} onChange={e => setContent(e.target.value)} className="input-field text-lg p-6 min-h-[300px] resize-none text-white placeholder:text-gray-400" rows={12} />
       </div>
 
       <div className="space-y-6">

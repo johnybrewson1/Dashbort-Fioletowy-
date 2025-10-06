@@ -10,8 +10,8 @@ interface SidebarProps {
 
 export const Sidebar: React.FC<SidebarProps> = ({ activeSection, onSectionChange }) => {
   const [profile, setProfile] = useState({
-    name: 'Darek Szoen',
-    email: 'dariuszszoen@gmail.com',
+    name: '',
+    email: '',
     avatar: ''
   });
 
@@ -32,10 +32,19 @@ export const Sidebar: React.FC<SidebarProps> = ({ activeSection, onSectionChange
     try {
       const { data: { user } } = await supabase.auth.getUser();
       if (user) {
-        setProfile(prev => ({
-          ...prev,
-          email: user.email || prev.email
-        }));
+        // Extract name from user metadata
+        const name = user.user_metadata?.full_name ||
+                    user.user_metadata?.name ||
+                    user.raw_user_meta_data?.full_name ||
+                    user.raw_user_meta_data?.name ||
+                    user.email?.split('@')[0] ||
+                    'Użytkownik';
+        
+        setProfile({
+          name: name,
+          email: user.email || '',
+          avatar: user.user_metadata?.avatar_url || user.raw_user_meta_data?.avatar_url || ''
+        });
       }
     } catch (error) {
       console.error('Error loading profile:', error);

@@ -3,6 +3,7 @@ import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
 import { toast } from '@/components/ui/use-toast';
+import { useSupabaseUser } from '@/hooks/useSupabaseUser';
 
 interface RankingTabProps {
   onClose: () => void;
@@ -11,16 +12,18 @@ interface RankingTabProps {
 export const RankingTab: React.FC<RankingTabProps> = ({ onClose }) => {
   const [channelUrl, setChannelUrl] = useState('');
   const [loading, setLoading] = useState(false);
+  const { userId } = useSupabaseUser();
 
   const handleSubmit = async () => {
     setLoading(true);
     try {
       const payload = {
+        user_id: userId || "{{user_id}}",
         type: 'ranking',
         channelUrl
       };
 
-      const response = await fetch('https://hook.eu2.make.com/lxr7hxctm1s5olq53e29hl9dde9ppmyn', {
+      const response = await fetch('https://hook.eu2.make.com/ujque49m1ce27pl79ut5btv34aevg8yl', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload)
