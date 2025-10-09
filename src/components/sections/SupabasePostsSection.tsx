@@ -130,12 +130,12 @@ export const SupabasePostsSection: React.FC = () => {
                           <img
                             src={post.image_url}
                             alt={`Thumbnail for ${post.title}`}
-                            className="w-full h-48 object-cover rounded-lg border border-form-container-border shadow-sm hover:shadow-md transition-shadow duration-200"
+                            className="w-full h-96 object-cover rounded-lg border border-form-container-border shadow-sm hover:shadow-md transition-shadow duration-200"
                           />
                           <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent rounded-lg opacity-0 group-hover:opacity-100 transition-opacity duration-200" />
                         </div>
                       ) : (
-                        <div className="h-48 bg-gradient-to-br from-blue-100 to-cyan-100 border border-form-container-border rounded-lg flex items-center justify-center">
+                        <div className="h-96 bg-gradient-to-br from-blue-100 to-cyan-100 border border-form-container-border rounded-lg flex items-center justify-center">
                           <Sparkles className="w-12 h-12 text-blue-400 opacity-60" />
                         </div>
                       )}

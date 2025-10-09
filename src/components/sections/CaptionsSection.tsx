@@ -120,12 +120,12 @@ export const CaptionsSection: React.FC = () => {
                           <img
                             src={caption.image_url}
                             alt={`Thumbnail for ${caption.title}`}
-                            className="w-full h-32 object-cover rounded-lg border border-form-container-border shadow-sm hover:shadow-md transition-shadow duration-200"
+                            className="w-full h-80 object-cover rounded-lg border border-form-container-border shadow-sm hover:shadow-md transition-shadow duration-200"
                           />
                           <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent rounded-lg opacity-0 group-hover:opacity-100 transition-opacity duration-200" />
                         </div>
                       ) : (
-                        <div className="mb-3 h-32 bg-gradient-to-br from-purple-100 to-pink-100 border border-form-container-border rounded-lg flex items-center justify-center">
+                        <div className="mb-3 h-80 bg-gradient-to-br from-purple-100 to-pink-100 border border-form-container-border rounded-lg flex items-center justify-center">
                           <MessageSquare className="w-12 h-12 text-purple-400 opacity-60" />
                         </div>
                       )}

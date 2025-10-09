@@ -176,12 +176,12 @@ export const PostsSection: React.FC = () => {
                         <img 
                           src={post.image} 
                           alt={`Thumbnail for ${post.title}`}
-                          className="w-full h-32 object-cover rounded-lg border border-form-container-border shadow-sm hover:shadow-md transition-shadow duration-200"
+                          className="w-full h-80 object-cover rounded-lg border border-form-container-border shadow-sm hover:shadow-md transition-shadow duration-200"
                         />
                         <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent rounded-lg opacity-0 group-hover:opacity-100 transition-opacity duration-200" />
                       </div>
                     ) : (
-                      <div className="mb-3 h-32 bg-gradient-to-br from-blue-100 to-cyan-100 border border-form-container-border rounded-lg flex items-center justify-center">
+                      <div className="mb-3 h-80 bg-gradient-to-br from-blue-100 to-cyan-100 border border-form-container-border rounded-lg flex items-center justify-center">
                         <Sparkles className="w-12 h-12 text-blue-400 opacity-60" />
                       </div>
                     )}

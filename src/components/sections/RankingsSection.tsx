@@ -85,10 +85,10 @@ export const RankingsSection: React.FC = () => {
                         <img 
                           src={ranking.thumbnailUrl} 
                           alt={`Thumbnail for ${ranking.title}`}
-                          className="w-20 h-20 object-cover rounded-lg border border-form-container-border shadow-sm"
+                          className="w-48 h-48 object-cover rounded-lg border border-form-container-border shadow-sm"
                         />
                       ) : (
-                        <div className="w-20 h-20 bg-gradient-to-br from-purple-100 to-pink-100 border border-form-container-border rounded-lg flex items-center justify-center">
+                        <div className="w-48 h-48 bg-gradient-to-br from-purple-100 to-pink-100 border border-form-container-border rounded-lg flex items-center justify-center">
                           <TrendingUp className="w-8 h-8 text-purple-400" />
                         </div>
                       )}
