@@ -12,7 +12,9 @@ import { useSettings } from '@/hooks/useSettings';
 import { supabase } from '@/integrations/supabase/client';
 import type { Post } from '@/lib/supabase';
 import { InstructionModal } from './InstructionModal';
+import { LoadingModal } from '@/components/ui/LoadingModal';
 import { useSupabaseUser } from '@/hooks/useSupabaseUser';
+import { buildApiUrl } from '@/lib/config';
 
 interface EditPostModalProps {
   post: Post | null;
@@ -44,6 +46,9 @@ export const EditPostModal: React.FC<EditPostModalProps> = ({ post, isOpen, onCl
   const [imageInstructionModalOpen, setImageInstructionModalOpen] = useState(false);
   const [postInstructions, setPostInstructions] = useState('');
   const [imageInstructions, setImageInstructions] = useState('');
+  const [loadingModalOpen, setLoadingModalOpen] = useState(false);
+  const [loadingTitle, setLoadingTitle] = useState('');
+  const [loadingDescription, setLoadingDescription] = useState('');
   
   const { settings } = useSettings();
   const { userId } = useSupabaseUser();
@@ -68,10 +73,17 @@ export const EditPostModal: React.FC<EditPostModalProps> = ({ post, isOpen, onCl
     if (!post) return;
     
     setRegeneratingPost(true);
+    setLoadingModalOpen(true);
+    setLoadingTitle('Regenerowanie postu...');
+    setLoadingDescription('AI analizuje Twoje instrukcje i tworzy nowy post.');
+    
     try {
-      const response = await fetch('https://hook.eu2.make.com/ujque49m1ce27pl79ut5btv34aevg8yl', {
+      const response = await fetch(buildApiUrl('/api/jobs'), {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 
+          'Content-Type': 'application/json',
+          'ngrok-skip-browser-warning': 'true',
+        },
         body: JSON.stringify({ 
           user_id: userId || "{{user_id}}",
           source_type: 'regenerate_post',
@@ -122,6 +134,9 @@ export const EditPostModal: React.FC<EditPostModalProps> = ({ post, isOpen, onCl
       }
     } catch (error) {
       console.error('Error regenerating post:', error);
+      // Zamknij loading modal przed pokazaniem błędu
+      setLoadingModalOpen(false);
+      
       toast({
         title: "Błąd",
         description: "Nie udało się zregenerować postu",
@@ -129,6 +144,7 @@ export const EditPostModal: React.FC<EditPostModalProps> = ({ post, isOpen, onCl
       });
     } finally {
       setRegeneratingPost(false);
+      setLoadingModalOpen(false);
     }
   };
 
@@ -144,9 +160,12 @@ export const EditPostModal: React.FC<EditPostModalProps> = ({ post, isOpen, onCl
     
     setRegeneratingImage(true);
     try {
-      const response = await fetch('https://hook.eu2.make.com/ujque49m1ce27pl79ut5btv34aevg8yl', {
+      const response = await fetch(buildApiUrl('/api/jobs'), {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 
+          'Content-Type': 'application/json',
+          'ngrok-skip-browser-warning': 'true',
+        },
         body: JSON.stringify({ 
           user_id: userId || "{{user_id}}",
           source_type: 'regenerate_image',
@@ -198,6 +217,9 @@ export const EditPostModal: React.FC<EditPostModalProps> = ({ post, isOpen, onCl
       }
     } catch (error) {
       console.error('Error regenerating image:', error);
+      // Zamknij loading modal przed pokazaniem błędu
+      setLoadingModalOpen(false);
+      
       toast({
         title: "Błąd",
         description: "Nie udało się zregenerować obrazu",
@@ -205,6 +227,7 @@ export const EditPostModal: React.FC<EditPostModalProps> = ({ post, isOpen, onCl
       });
     } finally {
       setRegeneratingImage(false);
+      setLoadingModalOpen(false);
     }
   };
 
@@ -214,9 +237,12 @@ export const EditPostModal: React.FC<EditPostModalProps> = ({ post, isOpen, onCl
     setRegeneratingAll(true);
     try {
       // Najpierw regeneruj post
-      const postResponse = await fetch('https://hook.eu2.make.com/ujque49m1ce27pl79ut5btv34aevg8yl', {
+      const postResponse = await fetch(buildApiUrl('/api/jobs'), {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 
+          'Content-Type': 'application/json',
+          'ngrok-skip-browser-warning': 'true',
+        },
         body: JSON.stringify({ 
           user_id: userId || "{{user_id}}",
           source_type: 'regenerate_post',
@@ -261,9 +287,12 @@ export const EditPostModal: React.FC<EditPostModalProps> = ({ post, isOpen, onCl
 
       if (postResponse.ok) {
         // Potem regeneruj obraz
-        const imageResponse = await fetch('https://hook.eu2.make.com/ujque49m1ce27pl79ut5btv34aevg8yl', {
+        const imageResponse = await fetch(buildApiUrl('/api/jobs'), {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
+          headers: { 
+          'Content-Type': 'application/json',
+          'ngrok-skip-browser-warning': 'true',
+        },
           body: JSON.stringify({ 
             user_id: userId || "{{user_id}}",
             source_type: 'regenerate_image',
@@ -323,6 +352,7 @@ export const EditPostModal: React.FC<EditPostModalProps> = ({ post, isOpen, onCl
       });
     } finally {
       setRegeneratingAll(false);
+      setLoadingModalOpen(false);
     }
   };
 
@@ -348,9 +378,12 @@ export const EditPostModal: React.FC<EditPostModalProps> = ({ post, isOpen, onCl
     setImageInstructionModalOpen(false);
     
     try {
-      const response = await fetch('https://hook.eu2.make.com/ujque49m1ce27pl79ut5btv34aevg8yl', {
+      const response = await fetch(buildApiUrl('/api/jobs'), {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 
+          'Content-Type': 'application/json',
+          'ngrok-skip-browser-warning': 'true',
+        },
         body: JSON.stringify({ 
           user_id: userId || "{{user_id}}",
           source_type: 'regenerate_all',
@@ -411,6 +444,7 @@ export const EditPostModal: React.FC<EditPostModalProps> = ({ post, isOpen, onCl
       });
     } finally {
       setRegeneratingAll(false);
+      setLoadingModalOpen(false);
     }
   };
 
@@ -477,11 +511,18 @@ export const EditPostModal: React.FC<EditPostModalProps> = ({ post, isOpen, onCl
   const handlePublish = async () => {
     if (!post) return;
     setPublishing(true);
+    setLoadingModalOpen(true);
+    setLoadingTitle('Publikowanie postu...');
+    setLoadingDescription('Wysyłanie do Make.com i aktualizacja statusu.');
+    
     try {
       // Send to webhook first
-      const webhookResponse = await fetch('https://hook.eu2.make.com/ujque49m1ce27pl79ut5btv34aevg8yl', {
+      const webhookResponse = await fetch(buildApiUrl('/api/jobs'), {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 
+          'Content-Type': 'application/json',
+          'ngrok-skip-browser-warning': 'true',
+        },
         body: JSON.stringify({
           user_id: userId || "{{user_id}}",
           source_type: 'opublikuj',
@@ -528,6 +569,9 @@ export const EditPostModal: React.FC<EditPostModalProps> = ({ post, isOpen, onCl
       onSave(updatedPost);
     } catch (error) {
       console.error('Error publishing post:', error);
+      // Zamknij loading modal przed pokazaniem błędu
+      setLoadingModalOpen(false);
+      
       toast({
         title: "Błąd",
         description: "Nie udało się opublikować postu",
@@ -535,12 +579,13 @@ export const EditPostModal: React.FC<EditPostModalProps> = ({ post, isOpen, onCl
       });
     } finally {
       setPublishing(false);
+      setLoadingModalOpen(false);
     }
   };
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto hide-scrollbar form-container">
+      <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto form-container hide-scrollbar">
         <DialogHeader>
           <DialogTitle className="text-2xl font-bold bg-gradient-to-r from-purple-500 to-pink-500 bg-clip-text text-transparent">
             Edytuj post
@@ -549,42 +594,16 @@ export const EditPostModal: React.FC<EditPostModalProps> = ({ post, isOpen, onCl
 
         <div className="space-y-6">
           <div>
-            <Label htmlFor="edit-content" className="text-lg font-semibold text-foreground">Treść postu</Label>
             <Textarea
               id="edit-content"
               value={content}
               onChange={(e) => setContent(e.target.value)}
               placeholder="Edytuj treść postu..."
-              className="input-field text-lg p-6 min-h-[500px] resize-none mt-2 text-white placeholder:text-gray-400 hide-scrollbar"
+              className="input-field text-lg p-6 h-[500px] resize-none mt-2 text-white placeholder:text-gray-400 overflow-y-auto hide-scrollbar"
               rows={25}
             />
           </div>
 
-          <div>
-            <div className="flex items-center justify-between mb-2">
-              <Label className="text-lg font-semibold text-foreground">Obraz</Label>
-              {imageUrl && (
-                <a href={imageUrl} download target="_blank" rel="noopener noreferrer">
-                  <Button type="button" variant="ghost" size="sm" className="flex items-center space-x-2">
-                    <Download className="w-4 h-4" />
-                    <span>Pobierz</span>
-                  </Button>
-                </a>
-              )}
-            </div>
-            {imageUrl && (
-              <div className="mt-3 flex justify-center">
-                <img
-                  src={imageUrl}
-                  alt="Image preview"
-                  loading="eager"
-                  referrerPolicy="no-referrer"
-                  className="w-48 h-48 object-cover rounded-lg border border-form-container-border cursor-pointer hover:opacity-90 transition-opacity"
-                  onClick={() => setImageModalOpen(true)}
-                />
-              </div>
-            )}
-          </div>
 
           <div>
             <Label htmlFor="edit-title" className="text-lg font-semibold text-foreground">Tytuł</Label>
@@ -612,11 +631,11 @@ export const EditPostModal: React.FC<EditPostModalProps> = ({ post, isOpen, onCl
             </Select>
           </div>
 
-          <div className="flex items-center justify-center gap-3 mb-4">
+          <div className="flex items-center justify-center gap-2 mb-4">
             <Button
               onClick={handleRegeneratePost}
               disabled={regeneratingPost}
-              className="bg-gradient-to-r from-blue-500 to-cyan-400 hover:from-blue-600 hover:to-cyan-500 text-white px-4 py-2 rounded-lg font-medium transition-all duration-300 hover:shadow-lg hover:shadow-blue-500/25 text-sm flex items-center space-x-2"
+              className="bg-gradient-to-r from-blue-500 to-cyan-400 hover:from-blue-600 hover:to-cyan-500 text-white px-3 py-2 rounded-lg font-medium transition-all duration-300 hover:shadow-lg hover:shadow-blue-500/25 text-xs flex items-center space-x-1"
             >
               <RefreshCw className={`w-4 h-4 ${regeneratingPost ? 'animate-spin' : ''}`} />
               <span>Regeneruj treść</span>
@@ -624,7 +643,7 @@ export const EditPostModal: React.FC<EditPostModalProps> = ({ post, isOpen, onCl
             <Button
               onClick={handleRegenerateImage}
               disabled={regeneratingImage}
-              className="bg-gradient-to-r from-green-500 to-emerald-400 hover:from-green-600 hover:to-emerald-500 text-white px-4 py-2 rounded-lg font-medium transition-all duration-300 hover:shadow-lg hover:shadow-green-500/25 text-sm flex items-center space-x-2"
+              className="bg-gradient-to-r from-green-500 to-emerald-400 hover:from-green-600 hover:to-emerald-500 text-white px-3 py-2 rounded-lg font-medium transition-all duration-300 hover:shadow-lg hover:shadow-green-500/25 text-xs flex items-center space-x-1"
             >
               <RefreshCw className={`w-4 h-4 ${regeneratingImage ? 'animate-spin' : ''}`} />
               <span>Regeneruj obraz</span>
@@ -632,7 +651,7 @@ export const EditPostModal: React.FC<EditPostModalProps> = ({ post, isOpen, onCl
             <Button
               onClick={handleRegenerateAll}
               disabled={regeneratingAll}
-              className="bg-gradient-to-r from-purple-500 to-pink-400 hover:from-purple-600 hover:to-pink-500 text-white px-4 py-2 rounded-lg font-medium transition-all duration-300 hover:shadow-lg hover:shadow-purple-500/25 text-sm flex items-center space-x-2"
+              className="bg-gradient-to-r from-purple-500 to-pink-400 hover:from-purple-600 hover:to-pink-500 text-white px-3 py-2 rounded-lg font-medium transition-all duration-300 hover:shadow-lg hover:shadow-purple-500/25 text-xs flex items-center space-x-1"
             >
               <RefreshCw className={`w-4 h-4 ${regeneratingAll ? 'animate-spin' : ''}`} />
               <span>Regeneruj wszystko</span>
@@ -640,14 +659,14 @@ export const EditPostModal: React.FC<EditPostModalProps> = ({ post, isOpen, onCl
             <Button
               onClick={handlePublish}
               disabled={publishing}
-              className="bg-gradient-to-r from-green-500 to-emerald-400 hover:from-green-600 hover:to-emerald-500 text-white px-6 py-3 font-semibold"
+              className="bg-gradient-to-r from-green-500 to-emerald-400 hover:from-green-600 hover:to-emerald-500 text-white px-4 py-2 font-semibold text-sm"
             >
               {publishing ? 'Publikowanie...' : 'Opublikuj'}
             </Button>
             <Button
               onClick={handleSave}
               disabled={loading}
-              className="bg-gradient-to-r from-blue-500 to-cyan-400 hover:from-blue-600 hover:to-cyan-500 text-white px-6 py-3 font-semibold"
+              className="bg-gradient-to-r from-blue-500 to-cyan-400 hover:from-blue-600 hover:to-cyan-500 text-white px-4 py-2 font-semibold text-sm"
             >
               {loading ? 'Zapisywanie...' : 'Zapisz zmiany'}
             </Button>
@@ -703,6 +722,12 @@ export const EditPostModal: React.FC<EditPostModalProps> = ({ post, isOpen, onCl
         placeholder="Wprowadź instrukcje dla regeneracji obrazka..."
         value={imageInstructions}
         onValueChange={setImageInstructions}
+      />
+
+      <LoadingModal
+        isOpen={loadingModalOpen}
+        title={loadingTitle}
+        description={loadingDescription}
       />
     </Dialog>
   );

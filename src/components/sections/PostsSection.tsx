@@ -3,8 +3,9 @@ import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Edit, RefreshCw, Trash2, Sparkles } from 'lucide-react';
+import { Edit, RefreshCw, Trash2, Sparkles, Search } from 'lucide-react';
 import { EditPostModal } from '@/components/modals/EditPostModal';
+import { ImageModal } from '@/components/ui/ImageModal';
 import { airtableService, Post } from '@/services/airtable';
 import { toast } from '@/components/ui/use-toast';
 import { useSettings } from '@/hooks/useSettings';
@@ -14,6 +15,9 @@ export const PostsSection: React.FC = () => {
   const [posts, setPosts] = useState<Post[]>([]);
   const [selectedPost, setSelectedPost] = useState<Post | null>(null);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [isImageModalOpen, setIsImageModalOpen] = useState(false);
+  const [selectedImageUrl, setSelectedImageUrl] = useState<string>('');
+  const [selectedImageAlt, setSelectedImageAlt] = useState<string>('');
   const [loading, setLoading] = useState(false);
   const { settings } = useSettings();
   const { userId } = useSupabaseUser();
@@ -61,6 +65,12 @@ export const PostsSection: React.FC = () => {
         variant: "destructive",
       });
     }
+  };
+
+  const handleImageClick = (imageUrl: string, alt: string) => {
+    setSelectedImageUrl(imageUrl);
+    setSelectedImageAlt(alt);
+    setIsImageModalOpen(true);
   };
 
   const handleRegenerate = async (postId: string) => {
@@ -120,7 +130,7 @@ export const PostsSection: React.FC = () => {
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3">
             {posts.length === 0 ? (
               <div className="col-span-full text-center py-8 text-muted-foreground">
                 <Sparkles className="w-12 h-12 mx-auto mb-4 opacity-50" />
@@ -157,6 +167,16 @@ export const PostsSection: React.FC = () => {
                         <RefreshCw className={`w-3 h-3 ${loading ? 'animate-spin' : ''}`} />
                       </Button>
                       
+                      {post.image && (
+                        <Button 
+                          variant="ghost" 
+                          size="icon"
+                          onClick={() => handleImageClick(post.image, `Thumbnail for ${post.title}`)}
+                          className="hover:bg-blue-500/10 hover:text-blue-500 h-8 w-8"
+                        >
+                          <Search className="w-3 h-3" />
+                        </Button>
+                      )}
                       <Button 
                         variant="ghost" 
                         size="icon"
@@ -176,13 +196,14 @@ export const PostsSection: React.FC = () => {
                         <img 
                           src={post.image} 
                           alt={`Thumbnail for ${post.title}`}
-                          className="w-full h-80 object-cover rounded-lg border border-form-container-border shadow-sm hover:shadow-md transition-shadow duration-200"
+                          className="w-full aspect-square object-cover rounded-lg border border-form-container-border shadow-sm hover:shadow-md transition-shadow duration-200 cursor-pointer h-32"
+                          onClick={() => handleImageClick(post.image, `Thumbnail for ${post.title}`)}
                         />
                         <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent rounded-lg opacity-0 group-hover:opacity-100 transition-opacity duration-200" />
                       </div>
                     ) : (
-                      <div className="mb-3 h-80 bg-gradient-to-br from-blue-100 to-cyan-100 border border-form-container-border rounded-lg flex items-center justify-center">
-                        <Sparkles className="w-12 h-12 text-blue-400 opacity-60" />
+                      <div className="mb-3 aspect-square bg-gradient-to-br from-blue-100 to-cyan-100 border border-form-container-border rounded-lg flex items-center justify-center h-32">
+                        <Sparkles className="w-8 h-8 text-blue-400 opacity-60" />
                       </div>
                     )}
                     
@@ -228,6 +249,13 @@ export const PostsSection: React.FC = () => {
           setIsEditModalOpen(false);
           setSelectedPost(null);
         }}
+      />
+      
+      <ImageModal
+        isOpen={isImageModalOpen}
+        onClose={() => setIsImageModalOpen(false)}
+        imageUrl={selectedImageUrl}
+        alt={selectedImageAlt}
       />
     </>
   );

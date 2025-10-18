@@ -11,7 +11,9 @@ import { useSettings } from '@/hooks/useSettings';
 import { useSupabaseUser } from '@/hooks/useSupabaseUser';
 import { supabase } from '@/integrations/supabase/client';
 import { InstructionModal } from './InstructionModal';
+import { LoadingModal } from '@/components/ui/LoadingModal';
 import type { Caption } from '@/lib/supabase';
+import { buildApiUrl } from '@/lib/config';
 
 interface EditCaptionModalProps {
   caption: Caption | null;
@@ -30,6 +32,9 @@ export const EditCaptionModal: React.FC<EditCaptionModalProps> = ({ caption, isO
   const [publishing, setPublishing] = useState(false);
   const [instructionModalOpen, setInstructionModalOpen] = useState(false);
   const [instructionType, setInstructionType] = useState<'regenerate' | 'regenerate_image' | 'regenerate_all'>('regenerate');
+  const [loadingModalOpen, setLoadingModalOpen] = useState(false);
+  const [loadingTitle, setLoadingTitle] = useState('');
+  const [loadingDescription, setLoadingDescription] = useState('');
   const [pendingInstructions, setPendingInstructions] = useState('');
   const { settings } = useSettings();
   const { userId } = useSupabaseUser();
@@ -99,6 +104,10 @@ export const EditCaptionModal: React.FC<EditCaptionModalProps> = ({ caption, isO
     if (!caption) return;
 
     setLoading(true);
+    setLoadingModalOpen(true);
+    setLoadingTitle('Regenerowanie caption...');
+    setLoadingDescription('AI analizuje i tworzy nowy caption.');
+    
     try {
       const payload = {
         user_id: userId || "{{user_id}}",
@@ -120,9 +129,12 @@ export const EditCaptionModal: React.FC<EditCaptionModalProps> = ({ caption, isO
         }
       };
 
-      const response = await fetch('https://hook.eu2.make.com/ujque49m1ce27pl79ut5btv34aevg8yl', {
+      const response = await fetch(buildApiUrl('/api/jobs'), {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 
+          'Content-Type': 'application/json',
+          'ngrok-skip-browser-warning': 'true',
+        },
         body: JSON.stringify(payload)
       });
 
@@ -136,6 +148,9 @@ export const EditCaptionModal: React.FC<EditCaptionModalProps> = ({ caption, isO
       }
     } catch (error) {
       console.error('Error regenerating caption:', error);
+      // Zamknij loading modal przed pokazaniem błędu
+      setLoadingModalOpen(false);
+      
       toast({
         title: "Błąd",
         description: "Nie udało się wygenerować caption ponownie",
@@ -143,6 +158,7 @@ export const EditCaptionModal: React.FC<EditCaptionModalProps> = ({ caption, isO
       });
     } finally {
       setLoading(false);
+      setLoadingModalOpen(false);
       setInstructionModalOpen(false);
     }
   };
@@ -173,9 +189,12 @@ export const EditCaptionModal: React.FC<EditCaptionModalProps> = ({ caption, isO
         }
       };
 
-      const response = await fetch('https://hook.eu2.make.com/ujque49m1ce27pl79ut5btv34aevg8yl', {
+      const response = await fetch(buildApiUrl('/api/jobs'), {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 
+          'Content-Type': 'application/json',
+          'ngrok-skip-browser-warning': 'true',
+        },
         body: JSON.stringify(payload)
       });
 
@@ -189,6 +208,9 @@ export const EditCaptionModal: React.FC<EditCaptionModalProps> = ({ caption, isO
       }
     } catch (error) {
       console.error('Error regenerating caption image:', error);
+      // Zamknij loading modal przed pokazaniem błędu
+      setLoadingModalOpen(false);
+      
       toast({
         title: "Błąd",
         description: "Nie udało się wygenerować obrazu ponownie",
@@ -196,6 +218,7 @@ export const EditCaptionModal: React.FC<EditCaptionModalProps> = ({ caption, isO
       });
     } finally {
       setLoading(false);
+      setLoadingModalOpen(false);
       setInstructionModalOpen(false);
     }
   };
@@ -226,9 +249,12 @@ export const EditCaptionModal: React.FC<EditCaptionModalProps> = ({ caption, isO
         }
       };
 
-      await fetch('https://hook.eu2.make.com/ujque49m1ce27pl79ut5btv34aevg8yl', {
+      await fetch(buildApiUrl('/api/jobs'), {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 
+          'Content-Type': 'application/json',
+          'ngrok-skip-browser-warning': 'true',
+        },
         body: JSON.stringify(captionPayload)
       });
 
@@ -254,9 +280,12 @@ export const EditCaptionModal: React.FC<EditCaptionModalProps> = ({ caption, isO
         }
       };
 
-      await fetch('https://hook.eu2.make.com/ujque49m1ce27pl79ut5btv34aevg8yl', {
+      await fetch(buildApiUrl('/api/jobs'), {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 
+          'Content-Type': 'application/json',
+          'ngrok-skip-browser-warning': 'true',
+        },
         body: JSON.stringify(imagePayload)
       });
 
@@ -266,6 +295,9 @@ export const EditCaptionModal: React.FC<EditCaptionModalProps> = ({ caption, isO
       });
     } catch (error) {
       console.error('Error regenerating all:', error);
+      // Zamknij loading modal przed pokazaniem błędu
+      setLoadingModalOpen(false);
+      
       toast({
         title: "Błąd",
         description: "Nie udało się wygenerować ponownie",
@@ -273,6 +305,7 @@ export const EditCaptionModal: React.FC<EditCaptionModalProps> = ({ caption, isO
       });
     } finally {
       setLoading(false);
+      setLoadingModalOpen(false);
       setInstructionModalOpen(false);
     }
   };
@@ -311,9 +344,12 @@ export const EditCaptionModal: React.FC<EditCaptionModalProps> = ({ caption, isO
     setPublishing(true);
     try {
       // Send to webhook first
-      const webhookResponse = await fetch('https://hook.eu2.make.com/ujque49m1ce27pl79ut5btv34aevg8yl', {
+      const webhookResponse = await fetch(buildApiUrl('/api/jobs'), {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 
+          'Content-Type': 'application/json',
+          'ngrok-skip-browser-warning': 'true',
+        },
         body: JSON.stringify({
           user_id: userId || "{{user_id}}",
           source_type: 'opublikuj_caption',
@@ -352,6 +388,9 @@ export const EditCaptionModal: React.FC<EditCaptionModalProps> = ({ caption, isO
       onSave(updatedCaption);
     } catch (error) {
       console.error('Error publishing caption:', error);
+      // Zamknij loading modal przed pokazaniem błędu
+      setLoadingModalOpen(false);
+      
       toast({
         title: "Błąd",
         description: "Nie udało się opublikować caption",
@@ -359,13 +398,14 @@ export const EditCaptionModal: React.FC<EditCaptionModalProps> = ({ caption, isO
       });
     } finally {
       setPublishing(false);
+      setLoadingModalOpen(false);
     }
   };
 
   return (
     <>
       <Dialog open={isOpen} onOpenChange={onClose}>
-        <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+        <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto hide-scrollbar">
           <DialogHeader>
             <DialogTitle className="text-2xl font-bold bg-gradient-to-r from-cyan-400 via-pink-500 to-purple-500 bg-clip-text text-transparent">
               Edytuj Caption
@@ -375,56 +415,16 @@ export const EditCaptionModal: React.FC<EditCaptionModalProps> = ({ caption, isO
           <div className="space-y-6">
             {/* Content Section */}
             <div className="space-y-4">
-              <Label htmlFor="edit-caption-content" className="text-lg font-semibold">Treść Caption</Label>
               <Textarea
                 id="edit-caption-content"
                 value={content}
                 onChange={(e) => setContent(e.target.value)}
                 placeholder="Edytuj treść caption..."
-                className="input-field text-lg p-6 min-h-[500px] resize-none mt-2 text-white placeholder:text-gray-400 hide-scrollbar"
+                className="input-field text-lg p-6 h-[500px] resize-none mt-2 text-white placeholder:text-gray-400 overflow-y-auto hide-scrollbar"
                 rows={25}
               />
             </div>
 
-            {/* Thumbnail Section */}
-            <div className="space-y-4">
-              <Label className="text-lg font-semibold">Miniatura</Label>
-              <div className="flex items-center space-x-4">
-                {imageUrl ? (
-                  <div className="relative">
-                    <img
-                      src={imageUrl}
-                      alt="Caption thumbnail"
-                      className="w-48 h-48 object-cover rounded-lg border border-form-container-border"
-                    />
-                  </div>
-                ) : (
-                  <div className="w-48 h-48 bg-gradient-to-br from-purple-100 to-pink-100 border border-form-container-border rounded-lg flex items-center justify-center">
-                    <span className="text-gray-400">Brak obrazu</span>
-                  </div>
-                )}
-                
-                <div className="flex flex-col space-y-2">
-                  <input
-                    type="file"
-                    accept="image/*"
-                    onChange={handleImageUpload}
-                    className="hidden"
-                    id="image-upload"
-                  />
-                  <Button
-                    type="button"
-                    variant="outline"
-                    onClick={() => document.getElementById('image-upload')?.click()}
-                    disabled={uploadingImage}
-                    className="w-full"
-                  >
-                    <Upload className="w-4 h-4 mr-2" />
-                    {uploadingImage ? 'Przesyłanie...' : 'Prześlij obraz'}
-                  </Button>
-                </div>
-              </div>
-            </div>
 
             {/* Title and Platform */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -513,6 +513,12 @@ export const EditCaptionModal: React.FC<EditCaptionModalProps> = ({ caption, isO
                   instructionType === 'regenerate_image' ? handleImageInstructionSubmit : 
                   handleAllInstructionSubmit}
         type={instructionType}
+      />
+
+      <LoadingModal
+        isOpen={loadingModalOpen}
+        title={loadingTitle}
+        description={loadingDescription}
       />
     </>
   );

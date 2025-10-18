@@ -6,6 +6,9 @@ export type Json =
   | { [key: string]: Json | undefined }
   | Json[]
 
+// Job status types for YouTube processing
+export type JobStatus = 'pending' | 'processing' | 'completed' | 'failed' | 'timed_out';
+
 export type Database = {
   // Allows to automatically instantiate createClient with right options
   // instead of createClient<Database, { PostgrestVersion: 'XX' }>(URL, KEY)
@@ -98,6 +101,39 @@ export type Database = {
           created_at?: string
           updated_at?: string
           deleted_at?: string | null
+        }
+        Relationships: []
+      }
+      jobs: {
+        Row: {
+          id: string
+          created_at: string
+          youtube_url: string
+          user_id: string | null
+          status: string
+          error_message: string | null
+          completed_at: string | null
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          created_at?: string
+          youtube_url: string
+          user_id?: string | null
+          status?: string
+          error_message?: string | null
+          completed_at?: string | null
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          created_at?: string
+          youtube_url?: string
+          user_id?: string | null
+          status?: string
+          error_message?: string | null
+          completed_at?: string | null
+          updated_at?: string
         }
         Relationships: []
       }
@@ -228,6 +264,39 @@ export type Database = {
         created_at?: string
         updated_at?: string
         deleted_at?: string | null
+      }
+      Relationships: []
+    }
+    jobs: {
+      Row: {
+        id: string
+        created_at: string
+        user_id: string
+        youtube_url: string
+        status: string
+        error_message: string | null
+        completed_at: string | null
+        updated_at: string
+      }
+      Insert: {
+        id?: string
+        created_at?: string
+        user_id: string
+        youtube_url: string
+        status?: string
+        error_message?: string | null
+        completed_at?: string | null
+        updated_at?: string
+      }
+      Update: {
+        id?: string
+        created_at?: string
+        user_id?: string
+        youtube_url?: string
+        status?: string
+        error_message?: string | null
+        completed_at?: string | null
+        updated_at?: string
       }
       Relationships: []
     }

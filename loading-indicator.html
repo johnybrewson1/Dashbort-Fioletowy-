@@ -1,0 +1,601 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Wskaźnik Ładowania - Supabase & Make.com</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 600px;
+            margin: 50px auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        
+        .form-group {
+            margin-bottom: 20px;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+            color: #333;
+        }
+        
+        input[type="text"] {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #ddd;
+            border-radius: 5px;
+            font-size: 16px;
+            box-sizing: border-box;
+        }
+        
+        input[type="text"]:focus {
+            outline: none;
+            border-color: #4CAF50;
+        }
+        
+        button {
+            background-color: #4CAF50;
+            color: white;
+            padding: 12px 24px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: background-color 0.3s;
+            margin-right: 10px;
+        }
+        
+        button:hover {
+            background-color: #45a049;
+        }
+        
+        button:disabled {
+            background-color: #cccccc;
+            cursor: not-allowed;
+        }
+        
+        .reset-btn {
+            background-color: #6c757d;
+        }
+        
+        .reset-btn:hover {
+            background-color: #5a6268;
+        }
+        
+        #loader {
+            text-align: center;
+            padding: 20px;
+            color: #666;
+        }
+        
+        .spinner {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #4CAF50;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 10px;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        #resultMessage {
+            padding: 15px;
+            border-radius: 5px;
+            margin-top: 20px;
+            font-weight: bold;
+        }
+        
+        .success {
+            background-color: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        
+        .error {
+            background-color: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+        
+        .form-hidden {
+            display: none;
+        }
+        
+        .config-section {
+            background-color: #f8f9fa;
+            padding: 20px;
+            border-radius: 5px;
+            margin-bottom: 20px;
+            border-left: 4px solid #007bff;
+        }
+        
+        .config-section h3 {
+            margin-top: 0;
+            color: #007bff;
+        }
+        
+        .config-input {
+            width: 100%;
+            padding: 8px;
+            margin: 5px 0;
+            border: 1px solid #ddd;
+            border-radius: 3px;
+            font-family: monospace;
+            font-size: 12px;
+        }
+        
+        .test-buttons {
+            margin-top: 20px;
+            padding: 15px;
+            background-color: #fff3cd;
+            border-radius: 5px;
+            border: 1px solid #ffeaa7;
+        }
+        
+        .test-buttons h4 {
+            margin-top: 0;
+            color: #856404;
+        }
+        
+        .test-btn {
+            background-color: #ffc107;
+            color: #212529;
+            margin: 5px;
+            padding: 8px 16px;
+            font-size: 14px;
+        }
+        
+        .test-btn:hover {
+            background-color: #e0a800;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Wskaźnik Ładowania - Test</h1>
+        
+        <!-- Sekcja konfiguracji -->
+        <div class="config-section">
+            <h3>Konfiguracja</h3>
+            <label for="supabaseUrl">Supabase URL:</label>
+            <input type="text" id="supabaseUrl" class="config-input" placeholder="https://twoj-projekt.supabase.co">
+            
+            <label for="supabaseKey">Supabase Anon Key:</label>
+            <input type="text" id="supabaseKey" class="config-input" placeholder="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...">
+            
+            <label for="webhookUrl">Make.com Webhook URL:</label>
+            <input type="text" id="webhookUrl" class="config-input" placeholder="https://hook.eu1.make.com/...">
+            
+            <button onclick="saveConfig()" style="margin-top: 10px;">Zapisz Konfigurację</button>
+        </div>
+        
+        <!-- Formularz -->
+        <form id="dataForm">
+            <div class="form-group">
+                <label for="userInput">Wprowadź dane:</label>
+                <input type="text" id="userInput" name="userInput" placeholder="Wpisz swoje dane..." required>
+            </div>
+            <button type="submit" id="submitBtn">Wyślij</button>
+            <button type="button" class="reset-btn" onclick="resetForm()">Reset</button>
+        </form>
+        
+        <!-- Wskaźnik ładowania -->
+        <div id="loader" style="display: none;">
+            <div class="spinner"></div>
+            <div>Przetwarzanie danych...</div>
+            <div id="jobId" style="font-size: 12px; color: #999; margin-top: 10px;"></div>
+        </div>
+        
+        <!-- Wynik operacji -->
+        <div id="resultMessage" style="display: none;"></div>
+        
+        <!-- Przyciski testowe -->
+        <div class="test-buttons">
+            <h4>Testy</h4>
+            <button class="test-btn" onclick="testSupabaseConnection()">Test Połączenia Supabase</button>
+            <button class="test-btn" onclick="simulateJob()">Symuluj Zadanie</button>
+            <button class="test-btn" onclick="checkJobsTable()">Sprawdź Tabelę Jobs</button>
+            <button class="test-btn" onclick="clearTestData()">Wyczyść Dane Testowe</button>
+        </div>
+    </div>
+
+    <!-- Supabase CDN -->
+    <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+    
+    <script>
+        // Konfiguracja - będzie ładowana z localStorage lub domyślna
+        let SUPABASE_URL = '';
+        let SUPABASE_ANON_KEY = '';
+        let WEBHOOK_URL = '';
+        
+        // Inicjalizacja klienta Supabase
+        let supabase = null;
+        
+        // Referencje do elementów DOM
+        const form = document.getElementById('dataForm');
+        const userInput = document.getElementById('userInput');
+        const submitBtn = document.getElementById('submitBtn');
+        const loader = document.getElementById('loader');
+        const resultMessage = document.getElementById('resultMessage');
+        const jobIdDisplay = document.getElementById('jobId');
+        
+        // Zmienna do przechowywania ID interwału
+        let pollingInterval = null;
+        
+        // Ładowanie konfiguracji przy starcie
+        window.addEventListener('load', function() {
+            loadConfig();
+        });
+        
+        // Funkcja zapisywania konfiguracji
+        function saveConfig() {
+            const url = document.getElementById('supabaseUrl').value.trim();
+            const key = document.getElementById('supabaseKey').value.trim();
+            const webhook = document.getElementById('webhookUrl').value.trim();
+            
+            if (!url || !key || !webhook) {
+                alert('Proszę wypełnić wszystkie pola konfiguracji!');
+                return;
+            }
+            
+            // Zapisz w localStorage
+            localStorage.setItem('supabaseUrl', url);
+            localStorage.setItem('supabaseKey', key);
+            localStorage.setItem('webhookUrl', webhook);
+            
+            // Zaktualizuj zmienne
+            SUPABASE_URL = url;
+            SUPABASE_ANON_KEY = key;
+            WEBHOOK_URL = webhook;
+            
+            // Inicjalizuj klienta Supabase
+            try {
+                supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+                showSuccess('Konfiguracja zapisana i klient Supabase zainicjalizowany!');
+            } catch (error) {
+                showError('Błąd podczas inicjalizacji klienta Supabase: ' + error.message);
+            }
+        }
+        
+        // Funkcja ładowania konfiguracji
+        function loadConfig() {
+            const url = localStorage.getItem('supabaseUrl');
+            const key = localStorage.getItem('supabaseKey');
+            const webhook = localStorage.getItem('webhookUrl');
+            
+            if (url) document.getElementById('supabaseUrl').value = url;
+            if (key) document.getElementById('supabaseKey').value = key;
+            if (webhook) document.getElementById('webhookUrl').value = webhook;
+            
+            // Jeśli wszystkie dane są dostępne, automatycznie zainicjalizuj
+            if (url && key) {
+                SUPABASE_URL = url;
+                SUPABASE_ANON_KEY = key;
+                WEBHOOK_URL = webhook || '';
+                
+                try {
+                    supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+                    console.log('Klient Supabase zainicjalizowany automatycznie');
+                } catch (error) {
+                    console.error('Błąd inicjalizacji:', error);
+                }
+            }
+        }
+        
+        // Test połączenia z Supabase
+        async function testSupabaseConnection() {
+            if (!supabase) {
+                showError('Najpierw skonfiguruj połączenie z Supabase!');
+                return;
+            }
+            
+            try {
+                const { data, error } = await supabase
+                    .from('jobs')
+                    .select('count')
+                    .limit(1);
+                
+                if (error) {
+                    throw error;
+                }
+                
+                showSuccess('Połączenie z Supabase działa poprawnie!');
+                console.log('Test Supabase:', data);
+            } catch (error) {
+                showError('Błąd połączenia z Supabase: ' + error.message);
+                console.error('Supabase error:', error);
+            }
+        }
+        
+        // Sprawdź tabelę jobs
+        async function checkJobsTable() {
+            if (!supabase) {
+                showError('Najpierw skonfiguruj połączenie z Supabase!');
+                return;
+            }
+            
+            try {
+                const { data, error } = await supabase
+                    .from('jobs')
+                    .select('*')
+                    .limit(10);
+                
+                if (error) {
+                    throw error;
+                }
+                
+                console.log('Dane z tabeli jobs:', data);
+                showSuccess(`Znaleziono ${data.length} rekordów w tabeli jobs. Sprawdź konsolę dla szczegółów.`);
+            } catch (error) {
+                showError('Błąd podczas sprawdzania tabeli jobs: ' + error.message);
+            }
+        }
+        
+        // Symuluj zadanie (bez webhooka)
+        async function simulateJob() {
+            if (!supabase) {
+                showError('Najpierw skonfiguruj połączenie z Supabase!');
+                return;
+            }
+            
+            try {
+                // Utwórz nowe zadanie
+                const { data, error } = await supabase
+                    .from('jobs')
+                    .insert([
+                        {
+                            status: 'processing',
+                            content_type: 'test',
+                            content_data: { test: 'simulated job' }
+                        }
+                    ])
+                    .select()
+                    .single();
+                
+                if (error) {
+                    throw error;
+                }
+                
+                showSuccess(`Utworzono symulowane zadanie: ${data.id}`);
+                
+                // Po 5 sekundach zmień status na completed
+                setTimeout(async () => {
+                    try {
+                        await supabase
+                            .from('jobs')
+                            .update({ status: 'completed' })
+                            .eq('id', data.id);
+                        
+                        console.log('Status zadania zmieniony na completed');
+                    } catch (error) {
+                        console.error('Błąd aktualizacji statusu:', error);
+                    }
+                }, 5000);
+                
+            } catch (error) {
+                showError('Błąd podczas tworzenia symulowanego zadania: ' + error.message);
+            }
+        }
+        
+        // Wyczyść dane testowe
+        async function clearTestData() {
+            if (!supabase) {
+                showError('Najpierw skonfiguruj połączenie z Supabase!');
+                return;
+            }
+            
+            if (!confirm('Czy na pewno chcesz usunąć wszystkie dane testowe z tabeli jobs?')) {
+                return;
+            }
+            
+            try {
+                const { error } = await supabase
+                    .from('jobs')
+                    .delete()
+                    .neq('id', '00000000-0000-0000-0000-000000000000'); // Usuń wszystko
+                
+                if (error) {
+                    throw error;
+                }
+                
+                showSuccess('Dane testowe zostały usunięte!');
+            } catch (error) {
+                showError('Błąd podczas usuwania danych: ' + error.message);
+            }
+        }
+        
+        // Obsługa wysłania formularza
+        form.addEventListener('submit', async function(e) {
+            e.preventDefault(); // Zablokuj domyślną akcję
+            
+            if (!supabase) {
+                showError('Najpierw skonfiguruj połączenie z Supabase!');
+                return;
+            }
+            
+            if (!WEBHOOK_URL) {
+                showError('Najpierw skonfiguruj URL webhooka Make.com!');
+                return;
+            }
+            
+            const inputValue = userInput.value.trim();
+            
+            if (!inputValue) {
+                alert('Proszę wprowadzić dane!');
+                return;
+            }
+            
+            // Ukryj formularz i pokaż loader
+            hideForm();
+            showLoader();
+            
+            try {
+                // Wyślij dane do webhooka Make.com
+                const response = await fetch(WEBHOOK_URL, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        user_input: inputValue,
+                        timestamp: new Date().toISOString()
+                    })
+                });
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                
+                const data = await response.json();
+                
+                if (data.job_id) {
+                    jobIdDisplay.textContent = `Job ID: ${data.job_id}`;
+                    // Rozpocznij polling statusu zadania
+                    startPolling(data.job_id);
+                } else {
+                    throw new Error('Nie otrzymano job_id z webhooka');
+                }
+                
+            } catch (error) {
+                console.error('Błąd podczas wysyłania danych:', error);
+                showError('Wystąpił błąd podczas wysyłania danych: ' + error.message);
+            }
+        });
+        
+        // Funkcja ukrywająca formularz
+        function hideForm() {
+            form.classList.add('form-hidden');
+            submitBtn.disabled = true;
+        }
+        
+        // Funkcja pokazująca loader
+        function showLoader() {
+            loader.style.display = 'block';
+            resultMessage.style.display = 'none';
+        }
+        
+        // Funkcja ukrywająca loader
+        function hideLoader() {
+            loader.style.display = 'none';
+            jobIdDisplay.textContent = '';
+        }
+        
+        // Funkcja pokazująca komunikat sukcesu
+        function showSuccess(message) {
+            resultMessage.className = 'success';
+            resultMessage.textContent = message;
+            resultMessage.style.display = 'block';
+        }
+        
+        // Funkcja pokazująca komunikat błędu
+        function showError(message) {
+            resultMessage.className = 'error';
+            resultMessage.textContent = message;
+            resultMessage.style.display = 'block';
+            hideLoader();
+        }
+        
+        // Funkcja resetująca formularz
+        function resetForm() {
+            if (pollingInterval) {
+                clearInterval(pollingInterval);
+                pollingInterval = null;
+            }
+            form.classList.remove('form-hidden');
+            submitBtn.disabled = false;
+            userInput.value = '';
+            hideLoader();
+            resultMessage.style.display = 'none';
+        }
+        
+        // Funkcja rozpoczynająca polling statusu zadania
+        function startPolling(jobId) {
+            pollingInterval = setInterval(async () => {
+                try {
+                    const { data, error } = await supabase
+                        .from('jobs')
+                        .select('status')
+                        .eq('id', jobId)
+                        .single();
+                    
+                    if (error) {
+                        throw error;
+                    }
+                    
+                    if (data && data.status) {
+                        console.log(`Status zadania ${jobId}: ${data.status}`);
+                        
+                        if (data.status === 'completed') {
+                            clearInterval(pollingInterval);
+                            pollingInterval = null;
+                            hideLoader();
+                            showSuccess('Zadanie zostało ukończone pomyślnie!');
+                            
+                            // Opcjonalnie: resetuj formularz po 3 sekundach
+                            setTimeout(() => {
+                                resetForm();
+                            }, 3000);
+                            
+                        } else if (data.status === 'failed') {
+                            clearInterval(pollingInterval);
+                            pollingInterval = null;
+                            showError('Wystąpił błąd podczas przetwarzania zadania');
+                            
+                        } else if (data.status === 'processing') {
+                            // Status wciąż processing - kontynuuj polling
+                            console.log('Zadanie w trakcie przetwarzania...');
+                        }
+                    }
+                    
+                } catch (error) {
+                    console.error('Błąd podczas sprawdzania statusu:', error);
+                    clearInterval(pollingInterval);
+                    pollingInterval = null;
+                    showError('Błąd podczas sprawdzania statusu zadania: ' + error.message);
+                }
+            }, 3000); // Polling co 3 sekundy
+        }
+        
+        // Obsługa błędów globalnych
+        window.addEventListener('error', function(e) {
+            console.error('Błąd globalny:', e.error);
+            if (pollingInterval) {
+                clearInterval(pollingInterval);
+                pollingInterval = null;
+            }
+            showError('Wystąpił nieoczekiwany błąd');
+        });
+        
+        // Obsługa nieobsłużonych promise rejections
+        window.addEventListener('unhandledrejection', function(e) {
+            console.error('Nieobsłużony błąd promise:', e.reason);
+            if (pollingInterval) {
+                clearInterval(pollingInterval);
+                pollingInterval = null;
+            }
+            showError('Wystąpił błąd sieciowy');
+        });
+        
+        console.log('Aplikacja wskaźnika ładowania została zainicjalizowana');
+    </script>
+</body>
+</html>
+
+

@@ -49,6 +49,14 @@ export const SupabaseSettingsSection: React.FC = () => {
     }
   }, [profile, userName, userEmail]);
 
+  // Update formData.name when userName changes
+  useEffect(() => {
+    setFormData(prev => ({
+      ...prev,
+      name: userName || userEmail || ''
+    }));
+  }, [userName, userEmail]);
+
   const loadUserEmail = async () => {
     try {
       const { data: { user } } = await supabase.auth.getUser();
@@ -61,6 +69,14 @@ export const SupabaseSettingsSection: React.FC = () => {
                     user.raw_user_meta_data?.name || 
                     user.email?.split('@')[0] || 
                     'Użytkownik';
+        
+        console.log('Loading user data:', {
+          email: user.email,
+          user_metadata: user.user_metadata,
+          raw_user_meta_data: user.raw_user_meta_data,
+          resolved_name: name
+        });
+        
         setUserName(name);
       }
     } catch (error) {
@@ -83,12 +99,53 @@ export const SupabaseSettingsSection: React.FC = () => {
         profileData.brand_description = formData.brand_description;
       }
       
-          // Only add seo_keywords if it's not empty
-          if (formData.seo_keywords && formData.seo_keywords.trim()) {
-            profileData.seo_keywords = formData.seo_keywords;
-          }
+      // Only add seo_keywords if it's not empty
+      if (formData.seo_keywords && formData.seo_keywords.trim()) {
+        profileData.seo_keywords = formData.seo_keywords;
+      }
       
+      // Save profile data
       const success = await updateProfile(profileData);
+      
+      // Update user metadata with name if it changed
+      if (formData.name && formData.name.trim() && formData.name !== userName) {
+        console.log('Updating user name:', { 
+          oldName: userName, 
+          newName: formData.name.trim() 
+        });
+        
+        const { data: updateData, error: updateError } = await supabase.auth.updateUser({
+          data: { 
+            full_name: formData.name.trim(),
+            name: formData.name.trim()
+          }
+        });
+        
+        if (updateError) {
+          console.error('Error updating user name:', updateError);
+          toast({
+            title: "Ostrzeżenie",
+            description: "Ustawienia zostały zapisane, ale nie udało się zaktualizować nazwy użytkownika.",
+            variant: "destructive",
+          });
+        } else {
+          console.log('User name updated successfully:', updateData);
+          // Immediately update the local state with new name
+          setUserName(formData.name.trim());
+          // Also refresh user data to ensure consistency
+          await loadUserEmail();
+          toast({
+            title: "Sukces!",
+            description: "Ustawienia zostały zapisane pomyślnie.",
+          });
+        }
+      } else if (success) {
+        toast({
+          title: "Sukces!",
+          description: "Ustawienia zostały zapisane pomyślnie.",
+        });
+      }
+      
       if (success) {
         // Refresh settings for webhook payloads
         await refetchSettings();

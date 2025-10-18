@@ -1,13 +1,17 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { toast } from '@/components/ui/use-toast';
+import { LoadingModal } from '@/components/ui/LoadingModal';
+import { supabase } from '@/integrations/supabase/client';
+import { JobStatus } from '@/integrations/supabase/types';
 
 import { YouTubeTab } from './tabs/YouTubeTab';
 import { RankingTab } from './tabs/RankingTab';
 import { MagicAgentTab } from './tabs/MagicAgentTab';
 import { useSettings } from '@/hooks/useSettings';
 import { useSupabaseUser } from '@/hooks/useSupabaseUser';
+import { buildApiUrl } from '@/lib/config';
 
 interface CreateModalProps {
   isOpen: boolean;
@@ -38,10 +42,102 @@ export const CreateModal: React.FC<CreateModalProps> = ({ isOpen, onClose }) => 
     x: [] as string[],
   });
   const [useThumbnail, setUseThumbnail] = useState(false);
+  const [loadingModalOpen, setLoadingModalOpen] = useState(false);
+  const [loadingTitle, setLoadingTitle] = useState('');
+  const [loadingDescription, setLoadingDescription] = useState('');
   const [loading, setLoading] = useState(false);
+  
+  // Job tracking states
+  const [jobId, setJobId] = useState<string | null>(null);
+  const [jobStatus, setJobStatus] = useState<JobStatus | 'submitting'>('submitting');
+  const [errorMessage, setErrorMessage] = useState<string>('');
   
   // State for YouTubeTab
   const [youtubeUrl, setYoutubeUrl] = useState('');
+
+  // Realtime subscription for job status tracking
+
+  // Function to reset job state
+  const resetJobState = () => {
+    setJobId(null);
+    setJobStatus('submitting');
+    setErrorMessage('');
+  };
+
+  // Supabase Realtime subscription for job tracking
+  useEffect(() => {
+    if (!jobId || jobStatus === 'completed' || jobStatus === 'failed' || jobStatus === 'timed_out') {
+      return;
+    }
+
+    console.log('🔍 Setting up Realtime subscription for job:', jobId);
+
+    // Fallback timeout - 5 minutes max
+    const timeoutId = setTimeout(() => {
+      console.log('⏰ Job timeout after 5 minutes');
+      setJobStatus('timed_out');
+      setErrorMessage('Przetwarzanie trwało zbyt długo. Spróbuj ponownie.');
+      setLoadingModalOpen(false);
+      toast({
+        title: "⏰ Timeout",
+        description: "Przetwarzanie trwało zbyt długo. Spróbuj ponownie.",
+        variant: "destructive",
+        duration: 10000,
+      });
+    }, 300000); // 5 minutes
+
+    // Subscribe to job status changes
+    const channel = supabase
+      .channel(`job-status-${jobId}`)
+      .on(
+        'postgres_changes',
+        { 
+          event: 'UPDATE', 
+          schema: 'public', 
+          table: 'jobs', 
+          filter: `id=eq.${jobId}` 
+        },
+        (payload) => {
+          console.log('📡 Received job update:', payload);
+          const newStatus = payload.new.status as JobStatus;
+          
+          if (newStatus === 'completed') {
+            console.log('✅ Job completed successfully');
+            setJobStatus('completed');
+            setLoadingModalOpen(false);
+            toast({
+              title: "🎉 Sukces!",
+              description: "Treści zostały pomyślnie utworzone! Sprawdź swoje posty.",
+              duration: 8000,
+            });
+            clearTimeout(timeoutId);
+            setTimeout(() => {
+              onClose();
+              resetJobState();
+            }, 2000);
+          } else if (newStatus === 'failed') {
+            console.log('❌ Job failed:', payload.new.error_message);
+            setJobStatus('failed');
+            setErrorMessage(payload.new.error_message || 'Wystąpił błąd podczas przetwarzania.');
+            setLoadingModalOpen(false);
+            toast({
+              title: "❌ Błąd",
+              description: payload.new.error_message || 'Wystąpił błąd podczas przetwarzania.',
+              variant: "destructive",
+              duration: 15000,
+            });
+            clearTimeout(timeoutId);
+          }
+        }
+      )
+      .subscribe();
+
+    return () => {
+      console.log('🧹 Cleaning up Realtime subscription');
+      clearTimeout(timeoutId);
+      supabase.removeChannel(channel);
+    };
+  }, [jobId, jobStatus, onClose]);
 
   // Function to validate YouTube URL
   const validateYouTubeUrl = (url: string): boolean => {
@@ -65,6 +161,18 @@ export const CreateModal: React.FC<CreateModalProps> = ({ isOpen, onClose }) => 
         variant: "destructive",
       });
       return '';
+    }
+  };
+
+  const getDetailedErrorMessage = (error: any, operation: string): string => {
+    if (error instanceof TypeError && error.message.includes('fetch')) {
+      return `Błąd połączenia z serwerem podczas ${operation}. Sprawdź połączenie internetowe.`;
+    } else if (error instanceof Error) {
+      return `${operation}: ${error.message}`;
+    } else if (typeof error === 'string') {
+      return `${operation}: ${error}`;
+    } else {
+      return `Wystąpił nieoczekiwany błąd podczas ${operation}. Spróbuj ponownie.`;
     }
   };
 
@@ -113,23 +221,49 @@ export const CreateModal: React.FC<CreateModalProps> = ({ isOpen, onClose }) => 
       return;
     }
 
+    console.log('🚀 Starting YouTube Transcriber...', { data, loadingModalOpen, loadingTitle, userId });
+    
+    // Sprawdź czy userId istnieje
+    if (!userId) {
+      toast({
+        title: "Błąd autoryzacji",
+        description: "Nie jesteś zalogowany. Zaloguj się ponownie.",
+        variant: "destructive",
+      });
+      return;
+    }
+    
+    // Reset job state
+    resetJobState();
+    setJobStatus('submitting');
     setLoading(true);
+    setLoadingModalOpen(true);
+    setLoadingTitle('Wysyłanie do Make.com...');
+    setLoadingDescription('Przekazywanie danych do Make.com. To może potrwać do 30 sekund.');
+    console.log('✅ Loading modal should be open now', { loadingModalOpen: true, loadingTitle: 'Wysyłanie do Make.com...', userId });
     
     // Pokaż toast ładowania
     toast({
-      title: "Przetwarzanie",
-      description: "YouTube Transcriber uruchamia się...",
+      title: "Wysyłanie do Make.com",
+      description: "Przekazywanie danych do Make.com...",
     });
 
+    // Dodaj timeout dla requestu
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 30000); // 30 sekund timeout
+    
     try {
-      const response = await fetch('https://hook.eu2.make.com/ujque49m1ce27pl79ut5btv34aevg8yl', {
+      
+      const response = await fetch(buildApiUrl('/api/jobs'), {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
+          'ngrok-skip-browser-warning': 'true',
         },
+        signal: controller.signal,
         body: JSON.stringify({
+          type: 'youtube_transcribe',
           user_id: userId || "{{user_id}}",
-          źródło: 'youtube',
           youtubeUrl: data.youtubeUrl,
           guidelines: data.guidelines,
           Post: {
@@ -159,57 +293,103 @@ export const CreateModal: React.FC<CreateModalProps> = ({ isOpen, onClose }) => 
         }),
       });
 
+      // Wyczyść timeout
+      clearTimeout(timeoutId);
+
       if (response.ok) {
-        console.log('YouTube content submitted successfully');
+        const responseData = await response.json().catch(() => null);
+        console.log('✅ YouTube content submitted successfully:', responseData);
         
-        toast({
-          title: "Sukces!",
-          description: "YouTube Transcriber został uruchomiony pomyślnie",
-        });
-        
-        onClose();
+        if (responseData?.job_id) {
+          // Nowa logika z job tracking (Supabase Realtime)
+          console.log('✅ Received job_id from Make.com:', responseData.job_id);
+          setJobId(responseData.job_id);
+          setJobStatus('processing');
+          setLoadingTitle('Przetwarzanie...');
+          setLoadingDescription('Make.com przetwarza film YouTube. To może potrwać kilka minut.');
+          
+          toast({
+            title: "✅ Zadanie rozpoczęte!",
+            description: "Make.com rozpoczął przetwarzanie. Będziemy Cię informować o postępach.",
+            duration: 5000,
+          });
+        } else {
+          // Make.com nie zwrócił job_id - prawdopodobnie stary scenariusz
+          console.log('⚠️ No job_id received - Make.com scenario needs update');
+          setJobStatus('failed');
+          setErrorMessage('Make.com nie zwrócił ID zadania. Scenariusz wymaga aktualizacji.');
+          setLoadingModalOpen(false);
+          
+          toast({
+            title: "⚠️ Wymagana aktualizacja",
+            description: "Scenariusz Make.com wymaga aktualizacji aby zwracał job_id. Skontaktuj się z administratorem.",
+            variant: "destructive",
+            duration: 10000,
+          });
+        }
       } else {
         // Obsługa błędów HTTP
         const errorText = await response.text().catch(() => 'Nieznany błąd');
         console.error('HTTP Error:', response.status, errorText);
         
-        let errorMessage = 'Nie udało się wysłać żądania';
+        let errorMessage = 'Nie udało się wysłać żądania do Make.com';
         if (response.status === 400) {
-          errorMessage = 'Nieprawidłowe dane wejściowe';
+          errorMessage = '🔧 Make.com: Nieprawidłowe dane wejściowe - sprawdź format URL YouTube';
         } else if (response.status === 401) {
-          errorMessage = 'Błąd autoryzacji';
+          errorMessage = '🔐 Make.com: Błąd autoryzacji - webhook może być nieaktywny';
         } else if (response.status === 403) {
-          errorMessage = 'Brak uprawnień';
+          errorMessage = '🚫 Make.com: Brak uprawnień - scenariusz może być wyłączony';
         } else if (response.status === 404) {
-          errorMessage = 'Serwis niedostępny';
+          errorMessage = '❌ Make.com: Webhook nie istnieje - sprawdź URL webhook';
+        } else if (response.status === 429) {
+          errorMessage = '⏳ Make.com: Zbyt wiele żądań - poczekaj chwilę i spróbuj ponownie';
         } else if (response.status >= 500) {
-          errorMessage = 'Błąd serwera Make.com';
+          errorMessage = '🔥 Make.com: Błąd serwera - scenariusz może być przeciążony';
         }
         
+        // Zamknij loading modal przed pokazaniem błędu
+        setLoadingModalOpen(false);
+        
         toast({
-          title: "Błąd YouTube Transcriber",
-          description: `${errorMessage} (${response.status})`,
+          title: "🚨 Błąd YouTube Transcriber",
+          description: `${errorMessage} (${response.status})\n\n💡 Spróbuj ponownie za kilka minut lub skontaktuj się z administratorem.`,
           variant: "destructive",
+          duration: 15000, // 15 sekund
         });
       }
     } catch (error) {
-      console.error('Error submitting YouTube content:', error);
+      console.error('❌ Error submitting YouTube content:', error);
       
       let errorMessage = 'Nie udało się przetworzyć YouTube';
       
-      if (error instanceof TypeError && error.message.includes('fetch')) {
-        errorMessage = 'Błąd połączenia z serwerem';
+      if (error instanceof Error && error.name === 'AbortError') {
+        errorMessage = '⏰ Make.com nie odpowiedział w ciągu 30 sekund.\n\n🔍 Możliwe przyczyny:\n• Scenariusz Make.com jest wyłączony\n• Webhook nie działa\n• Make.com jest przeciążony\n\n💡 Sprawdź Make.com lub spróbuj ponownie za 10 minut.';
+      } else if (error instanceof TypeError && error.message.includes('fetch')) {
+        errorMessage = '🌐 Błąd połączenia z Make.com.\n\n🔍 Sprawdź:\n• Połączenie internetowe\n• Czy webhook Make.com jest aktywny\n• Czy URL webhook jest prawidłowy';
       } else if (error instanceof Error) {
-        errorMessage = error.message;
+        errorMessage = `❌ Błąd: ${error.message}\n\n💡 Sprawdź Make.com lub spróbuj ponownie.`;
       }
       
+      // Set error state
+      setJobStatus('failed');
+      setErrorMessage(errorMessage);
+      setLoadingModalOpen(false);
+      
       toast({
-        title: "Błąd połączenia",
-        description: errorMessage,
+        title: "🚨 Problem z Make.com",
+        description: `${getDetailedErrorMessage(error, "przetwarzania YouTube")}\n\n⚠️ WAŻNE: Make.com może mieć błąd w module, ale aplikacja o tym nie wie!\n\n💡 Sprawdź Make.com bezpośrednio lub spróbuj ponownie za 10 minut.`,
         variant: "destructive",
+        duration: 20000, // 20 sekund
       });
     } finally {
+      console.log('🏁 YouTube Transcriber finished, closing loading modal');
+      // Wyczyść timeout jeśli jeszcze nie został wyczyszczony
+      clearTimeout(timeoutId);
       setLoading(false);
+      // Don't close loading modal here if we have a job_id - let Realtime handle it
+      if (!jobId) {
+        setLoadingModalOpen(false);
+      }
     }
   };
 
@@ -259,6 +439,11 @@ export const CreateModal: React.FC<CreateModalProps> = ({ isOpen, onClose }) => 
           </TabsContent>
         </Tabs>
       </DialogContent>
+      <LoadingModal
+        isOpen={loadingModalOpen}
+        title={loadingTitle}
+        description={loadingDescription}
+      />
     </Dialog>
   );
 };

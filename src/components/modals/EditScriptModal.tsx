@@ -12,7 +12,9 @@ import { useSettings } from '@/hooks/useSettings';
 import { useSupabaseUser } from '@/hooks/useSupabaseUser';
 import { supabase } from '@/integrations/supabase/client';
 import { InstructionModal } from './InstructionModal';
+import { LoadingModal } from '@/components/ui/LoadingModal';
 import type { Script } from '@/lib/supabase';
+import { buildApiUrl } from '@/lib/config';
 
 interface EditScriptModalProps {
   script: Script | null;
@@ -36,6 +38,9 @@ export const EditScriptModal: React.FC<EditScriptModalProps> = ({ script, isOpen
   const [instructionModalOpen, setInstructionModalOpen] = useState(false);
   const [instructionType, setInstructionType] = useState<'script' | 'image' | 'all'>('script');
   const [pendingInstructions, setPendingInstructions] = useState<string[]>([]);
+  const [loadingModalOpen, setLoadingModalOpen] = useState(false);
+  const [loadingTitle, setLoadingTitle] = useState('');
+  const [loadingDescription, setLoadingDescription] = useState('');
   
   const { settings } = useSettings();
   const { userId } = useSupabaseUser();
@@ -79,10 +84,17 @@ export const EditScriptModal: React.FC<EditScriptModalProps> = ({ script, isOpen
     if (!script) return;
     
     setRegenerating(true);
+    setLoadingModalOpen(true);
+    setLoadingTitle('Regenerowanie skryptu...');
+    setLoadingDescription('AI analizuje Twoje instrukcje i tworzy nowy skrypt.');
+    
     try {
-      const response = await fetch('https://hook.eu2.make.com/ujque49m1ce27pl79ut5btv34aevg8yl', {
+      const response = await fetch(buildApiUrl('/api/jobs'), {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 
+          'Content-Type': 'application/json',
+          'ngrok-skip-browser-warning': 'true',
+        },
         body: JSON.stringify({
           user_id: userId || "{{user_id}}",
           source_type: 'regenerate_script',
@@ -118,6 +130,9 @@ export const EditScriptModal: React.FC<EditScriptModalProps> = ({ script, isOpen
       }
     } catch (error) {
       console.error('Error regenerating script:', error);
+      // Zamknij loading modal przed pokazaniem błędu
+      setLoadingModalOpen(false);
+      
       toast({
         title: "Błąd",
         description: "Nie udało się zregenerować skryptu",
@@ -125,6 +140,7 @@ export const EditScriptModal: React.FC<EditScriptModalProps> = ({ script, isOpen
       });
     } finally {
       setRegenerating(false);
+      setLoadingModalOpen(false);
     }
   };
 
@@ -133,9 +149,12 @@ export const EditScriptModal: React.FC<EditScriptModalProps> = ({ script, isOpen
     
     setRegenerating(true);
     try {
-      const response = await fetch('https://hook.eu2.make.com/ujque49m1ce27pl79ut5btv34aevg8yl', {
+      const response = await fetch(buildApiUrl('/api/jobs'), {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 
+          'Content-Type': 'application/json',
+          'ngrok-skip-browser-warning': 'true',
+        },
         body: JSON.stringify({
           user_id: userId || "{{user_id}}",
           source_type: 'regenerate_thumbnail',
@@ -164,6 +183,9 @@ export const EditScriptModal: React.FC<EditScriptModalProps> = ({ script, isOpen
       }
     } catch (error) {
       console.error('Error regenerating image:', error);
+      // Zamknij loading modal przed pokazaniem błędu
+      setLoadingModalOpen(false);
+      
       toast({
         title: "Błąd",
         description: "Nie udało się zregenerować obrazu",
@@ -171,6 +193,7 @@ export const EditScriptModal: React.FC<EditScriptModalProps> = ({ script, isOpen
       });
     } finally {
       setRegenerating(false);
+      setLoadingModalOpen(false);
     }
   };
 
@@ -179,9 +202,12 @@ export const EditScriptModal: React.FC<EditScriptModalProps> = ({ script, isOpen
     
     setRegenerating(true);
     try {
-      const response = await fetch('https://hook.eu2.make.com/ujque49m1ce27pl79ut5btv34aevg8yl', {
+      const response = await fetch(buildApiUrl('/api/jobs'), {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 
+          'Content-Type': 'application/json',
+          'ngrok-skip-browser-warning': 'true',
+        },
         body: JSON.stringify({
           user_id: userId || "{{user_id}}",
           source_type: 'regenerate_all',
@@ -217,6 +243,9 @@ export const EditScriptModal: React.FC<EditScriptModalProps> = ({ script, isOpen
       }
     } catch (error) {
       console.error('Error regenerating all:', error);
+      // Zamknij loading modal przed pokazaniem błędu
+      setLoadingModalOpen(false);
+      
       toast({
         title: "Błąd",
         description: "Nie udało się zregenerować",
@@ -224,6 +253,7 @@ export const EditScriptModal: React.FC<EditScriptModalProps> = ({ script, isOpen
       });
     } finally {
       setRegenerating(false);
+      setLoadingModalOpen(false);
     }
   };
 
@@ -287,11 +317,18 @@ export const EditScriptModal: React.FC<EditScriptModalProps> = ({ script, isOpen
   const handlePublish = async () => {
     if (!script) return;
     setPublishing(true);
+    setLoadingModalOpen(true);
+    setLoadingTitle('Publikowanie skryptu...');
+    setLoadingDescription('Wysyłanie do Make.com i aktualizacja statusu.');
+    
     try {
       // Send to webhook first
-      const webhookResponse = await fetch('https://hook.eu2.make.com/ujque49m1ce27pl79ut5btv34aevg8yl', {
+      const webhookResponse = await fetch(buildApiUrl('/api/jobs'), {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 
+          'Content-Type': 'application/json',
+          'ngrok-skip-browser-warning': 'true',
+        },
         body: JSON.stringify({
           user_id: userId || "{{user_id}}",
           source_type: 'opublikuj_script',
@@ -331,6 +368,9 @@ export const EditScriptModal: React.FC<EditScriptModalProps> = ({ script, isOpen
       onSave(updatedScript);
     } catch (error) {
       console.error('Error publishing script:', error);
+      // Zamknij loading modal przed pokazaniem błędu
+      setLoadingModalOpen(false);
+      
       toast({
         title: "Błąd",
         description: "Nie udało się opublikować skryptu",
@@ -338,12 +378,13 @@ export const EditScriptModal: React.FC<EditScriptModalProps> = ({ script, isOpen
       });
     } finally {
       setPublishing(false);
+      setLoadingModalOpen(false);
     }
   };
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto hide-scrollbar form-container">
+      <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto form-container hide-scrollbar">
         <DialogHeader>
           <DialogTitle className="text-2xl font-bold bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
             Edytuj skrypt
@@ -352,13 +393,12 @@ export const EditScriptModal: React.FC<EditScriptModalProps> = ({ script, isOpen
 
         <div className="space-y-6">
           <div>
-            <Label htmlFor="edit-script-content" className="text-lg font-semibold text-foreground">Treść skryptu</Label>
             <Textarea
               id="edit-script-content"
               value={content}
               onChange={(e) => setContent(e.target.value)}
               placeholder="Edytuj treść skryptu..."
-              className="input-field text-lg p-6 min-h-[500px] resize-none mt-2 text-white placeholder:text-gray-400 hide-scrollbar"
+              className="input-field text-lg p-6 h-[500px] resize-none mt-2 text-white placeholder:text-gray-400 overflow-y-auto hide-scrollbar"
               rows={25}
             />
           </div>
@@ -380,37 +420,7 @@ export const EditScriptModal: React.FC<EditScriptModalProps> = ({ script, isOpen
                 disabled={uploadingImage}
               />
               <div className="flex gap-2">
-                {imageUrl && (
-                  <a href={imageUrl} download target="_blank" rel="noopener noreferrer">
-                    <Button type="button" variant="ghost" size="sm" className="flex items-center space-x-2">
-                      <Download className="w-4 h-4" />
-                      <span>Pobierz</span>
-                    </Button>
-                  </a>
-                )}
               </div>
-            </div>
-            <div className="mt-3 flex justify-center">
-              {imageUrl ? (
-                <img
-                  src={imageUrl}
-                  alt="Thumbnail preview"
-                  className="w-48 h-48 object-cover rounded-lg border border-form-container-border cursor-pointer hover:opacity-90 transition-opacity"
-                  onClick={() => setImageModalOpen(true)}
-                  onError={(e) => {
-                    // Show subtle placeholder if the URL fails to load
-                    e.currentTarget.style.display = 'none';
-                    const placeholder = document.createElement('div');
-                    placeholder.className = 'w-48 h-48 flex items-center justify-center rounded-lg border border-dashed border-form-container-border text-muted-foreground';
-                    placeholder.textContent = 'Brak miniatury';
-                    e.currentTarget.parentElement?.appendChild(placeholder);
-                  }}
-                />
-              ) : (
-                <div className="w-48 h-48 flex items-center justify-center rounded-lg border border-dashed border-form-container-border text-muted-foreground">
-                  Brak miniatury
-                </div>
-              )}
             </div>
           </div>
 
@@ -492,6 +502,12 @@ export const EditScriptModal: React.FC<EditScriptModalProps> = ({ script, isOpen
         title={instructionType === 'script' ? 'Regenerate skrypt' : 
                instructionType === 'image' ? 'Regenerate obraz' : 
                'Regenerate wszystko'}
+      />
+
+      <LoadingModal
+        isOpen={loadingModalOpen}
+        title={loadingTitle}
+        description={loadingDescription}
       />
     </Dialog>
   );

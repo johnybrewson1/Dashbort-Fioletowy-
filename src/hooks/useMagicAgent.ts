@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { toast } from '@/components/ui/use-toast';
 import { useSettings } from '@/hooks/useSettings';
 import { useSupabaseUser } from '@/hooks/useSupabaseUser';
+import { buildApiUrl } from '@/lib/config';
 
 interface PlatformSelection {
   instagram: boolean;
@@ -20,6 +21,7 @@ interface ContentTypes {
   linkedin: string[];
   x: string[];
   facebook: string[];
+  blog: string[];
 }
 
 export const useMagicAgent = () => {
@@ -41,7 +43,8 @@ export const useMagicAgent = () => {
     youtube: [],
     linkedin: [],
     x: [],
-    facebook: []
+    facebook: [],
+    blog: []
   });
   const [imageUrl, setImageUrl] = useState('');
   const [blogPurpose, setBlogPurpose] = useState('');
@@ -127,12 +130,25 @@ export const useMagicAgent = () => {
     try {
       const payload = buildWebhookPayload();
       
-      const response = await fetch('https://hook.eu2.make.com/ujque49m1ce27pl79ut5btv34aevg8yl', {
+      const response = await fetch(buildApiUrl('/api/jobs'), {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
+          'ngrok-skip-browser-warning': 'true',
         },
-        body: JSON.stringify(payload),
+        body: JSON.stringify({
+          type: 'magic_agent',
+          content: content,
+          platform: selectedPlatforms.instagram ? 'instagram' : 
+                   selectedPlatforms.linkedin ? 'linkedin' : 
+                   selectedPlatforms.tiktok ? 'tiktok' : 'linkedin',
+          language: 'pl',
+          brandDescription: 'Testowa marka',
+          avatarRecipient: 'Ogólna publiczność',
+          voiceForPosts: 'Profesjonalny',
+          guidelines: '',
+          user_id: userId
+        }),
       });
 
       if (response.ok) {
@@ -159,6 +175,7 @@ export const useMagicAgent = () => {
           linkedin: [],
           x: [],
           facebook: [],
+          blog: [],
         });
         setImageUrl('');
         setBlogPurpose('');

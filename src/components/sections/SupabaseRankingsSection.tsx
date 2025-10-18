@@ -2,9 +2,10 @@ import React, { useState } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { TrendingUp, Plus, Trash2, ExternalLink } from 'lucide-react';
+import { TrendingUp, Plus, Trash2, ExternalLink, Search } from 'lucide-react';
 import { useSupabaseRankings } from '@/hooks/useSupabaseData';
 import { CreateFromRankingModal } from '@/components/modals/CreateFromRankingModal';
+import { ImageModal } from '@/components/ui/ImageModal';
 import { toast } from '@/components/ui/use-toast';
 import type { Ranking } from '@/lib/supabase';
 
@@ -12,6 +13,9 @@ export const SupabaseRankingsSection: React.FC = () => {
   const { rankings, loading, error, deleteRanking } = useSupabaseRankings();
   const [selectedRanking, setSelectedRanking] = useState<Ranking | null>(null);
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
+  const [isImageModalOpen, setIsImageModalOpen] = useState(false);
+  const [selectedImageUrl, setSelectedImageUrl] = useState<string>('');
+  const [selectedImageAlt, setSelectedImageAlt] = useState<string>('');
 
 
   const handleDelete = async (rankingId: string) => {
@@ -34,6 +38,12 @@ export const SupabaseRankingsSection: React.FC = () => {
   const handleCreateFrom = (ranking: Ranking) => {
     setSelectedRanking(ranking);
     setIsCreateModalOpen(true);
+  };
+
+  const handleImageClick = (imageUrl: string, alt: string) => {
+    setSelectedImageUrl(imageUrl);
+    setSelectedImageAlt(alt);
+    setIsImageModalOpen(true);
   };
 
   if (loading) {
@@ -79,10 +89,10 @@ export const SupabaseRankingsSection: React.FC = () => {
                         <img 
                           src={ranking.thumbnail_url} 
                           alt={`Thumbnail for ${ranking.title}`}
-                          className="w-48 h-48 object-cover rounded-lg border border-form-container-border shadow-sm"
+                          className="w-20 h-20 object-cover rounded-lg border border-form-container-border shadow-sm"
                         />
                       ) : (
-                        <div className="w-48 h-48 bg-gradient-to-br from-purple-100 to-pink-100 border border-form-container-border rounded-lg flex items-center justify-center">
+                        <div className="w-20 h-20 bg-gradient-to-br from-purple-100 to-pink-100 border border-form-container-border rounded-lg flex items-center justify-center">
                           <TrendingUp className="w-8 h-8 text-purple-400" />
                         </div>
                       )}
@@ -125,6 +135,17 @@ export const SupabaseRankingsSection: React.FC = () => {
                       Stwórz z
                     </Button>
                     
+                    {ranking.thumbnail_url && (
+                      <Button 
+                        variant="ghost" 
+                        size="icon"
+                        onClick={() => handleImageClick(ranking.thumbnail_url, `Thumbnail for ${ranking.title}`)}
+                        className="hover:bg-blue-500/10 hover:text-blue-500"
+                        title="Powiększ obraz"
+                      >
+                        <Search className="w-4 h-4" />
+                      </Button>
+                    )}
                     <Button 
                       variant="ghost" 
                       size="icon"
@@ -148,6 +169,13 @@ export const SupabaseRankingsSection: React.FC = () => {
           setIsCreateModalOpen(false);
           setSelectedRanking(null);
         }}
+      />
+      
+      <ImageModal
+        isOpen={isImageModalOpen}
+        onClose={() => setIsImageModalOpen(false)}
+        imageUrl={selectedImageUrl}
+        alt={selectedImageAlt}
       />
     </>
   );

@@ -180,21 +180,15 @@ export const YouTubeTab: React.FC<YouTubeTabProps> = ({
       </div>
 
       <Button 
-        onClick={() => onSubmit({ youtubeUrl, guidelines })}
+        onClick={() => {
+          console.log('🎯 YouTubeTab button clicked:', { youtubeUrl, guidelines, loading });
+          onSubmit({ youtubeUrl, guidelines });
+        }}
         disabled={loading || !youtubeUrl.trim()}
         className="w-full bg-gradient-to-r from-primary to-accent hover:from-primary/90 hover:to-accent/90 text-primary-foreground font-semibold py-3 text-lg"
       >
-        {loading ? (
-          <>
-            <Sparkles className="w-5 h-5 mr-2 animate-spin" />
-            Analizowanie...
-          </>
-        ) : (
-          <>
-            <Sparkles className="w-5 h-5 mr-2" />
-            ✨ Stwórz ✨
-          </>
-        )}
+        <Sparkles className="w-5 h-5 mr-2" />
+        ✨ Stwórz ✨
       </Button>
     </div>
   );

@@ -5,9 +5,7 @@ const FloatingBackground = () => {
     <div className="floating-background fixed inset-0 z-0">
       {/* Animated floating orbs */}
       <div className="absolute top-20 left-10 w-32 h-32 rounded-full bg-gradient-to-r from-primary/20 to-accent/20 animate-float blur-xl"></div>
-      <div className="absolute top-40 right-20 w-24 h-24 rounded-full bg-gradient-to-r from-secondary/30 to-primary/30 animate-float delay-1000 blur-lg"></div>
       <div className="absolute bottom-32 left-1/4 w-40 h-40 rounded-full bg-gradient-to-r from-accent/15 to-secondary/15 animate-float delay-2000 blur-2xl"></div>
-      <div className="absolute bottom-20 right-1/3 w-28 h-28 rounded-full bg-gradient-to-r from-primary/25 to-accent/25 animate-float delay-3000 blur-xl"></div>
       
       {/* Subtle grid pattern overlay */}
       <div className="absolute inset-0 opacity-5">

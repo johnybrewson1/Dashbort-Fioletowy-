@@ -2,9 +2,10 @@ import React, { useState, useMemo } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Edit, Trash2, MessageSquare } from 'lucide-react';
+import { Edit, Trash2, MessageSquare, Search } from 'lucide-react';
 import { useSupabaseCaptions } from '@/hooks/useSupabaseData';
 import { EditCaptionModal } from '@/components/modals/EditCaptionModal';
+import { ImageModal } from '@/components/ui/ImageModal';
 import { toast } from '@/components/ui/use-toast';
 import { useSettings } from '@/hooks/useSettings';
 import type { Caption } from '@/lib/supabase';
@@ -13,6 +14,9 @@ export const CaptionsSection: React.FC = () => {
   const { captions, loading, error, updateCaption, deleteCaption } = useSupabaseCaptions();
   const [selectedCaption, setSelectedCaption] = useState<Caption | null>(null);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [isImageModalOpen, setIsImageModalOpen] = useState(false);
+  const [selectedImageUrl, setSelectedImageUrl] = useState<string>('');
+  const [selectedImageAlt, setSelectedImageAlt] = useState<string>('');
   const { settings } = useSettings();
 
   const handleDelete = async (captionId: string) => {
@@ -30,6 +34,12 @@ export const CaptionsSection: React.FC = () => {
         variant: "destructive",
       });
     }
+  };
+
+  const handleImageClick = (imageUrl: string, alt: string) => {
+    setSelectedImageUrl(imageUrl);
+    setSelectedImageAlt(alt);
+    setIsImageModalOpen(true);
   };
 
   const handleEdit = (caption: Caption) => {
@@ -77,7 +87,7 @@ export const CaptionsSection: React.FC = () => {
     <>
       <Card className="form-container border-form-container-border backdrop-blur-sm">
         <CardContent className="p-6">
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3">
             {captions.length === 0 ? (
               <div className="col-span-full text-center py-8 text-muted-foreground">
                 <MessageSquare className="w-12 h-12 mx-auto mb-4 opacity-50" />
@@ -97,6 +107,20 @@ export const CaptionsSection: React.FC = () => {
                       </Badge>
                       
                       <div className="flex items-center space-x-1 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                        {caption.image_url && (
+                          <Button 
+                            variant="ghost" 
+                            size="icon"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleImageClick(caption.image_url, `Thumbnail for ${caption.title}`);
+                            }}
+                            className="hover:bg-blue-500/10 hover:text-blue-500 h-8 w-8"
+                            title="Powiększ obraz"
+                          >
+                            <Search className="w-3 h-3" />
+                          </Button>
+                        )}
                         <Button 
                           variant="ghost" 
                           size="icon"
@@ -120,13 +144,14 @@ export const CaptionsSection: React.FC = () => {
                           <img
                             src={caption.image_url}
                             alt={`Thumbnail for ${caption.title}`}
-                            className="w-full h-80 object-cover rounded-lg border border-form-container-border shadow-sm hover:shadow-md transition-shadow duration-200"
+                            className="w-full aspect-square object-cover rounded-lg border border-form-container-border shadow-sm hover:shadow-md transition-shadow duration-200 cursor-pointer h-32"
+                            onClick={() => handleImageClick(caption.image_url, `Thumbnail for ${caption.title}`)}
                           />
                           <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent rounded-lg opacity-0 group-hover:opacity-100 transition-opacity duration-200" />
                         </div>
                       ) : (
-                        <div className="mb-3 h-80 bg-gradient-to-br from-purple-100 to-pink-100 border border-form-container-border rounded-lg flex items-center justify-center">
-                          <MessageSquare className="w-12 h-12 text-purple-400 opacity-60" />
+                        <div className="mb-3 aspect-square bg-gradient-to-br from-purple-100 to-pink-100 border border-form-container-border rounded-lg flex items-center justify-center h-32">
+                          <MessageSquare className="w-8 h-8 text-purple-400 opacity-60" />
                         </div>
                       )}
                       
@@ -159,6 +184,13 @@ export const CaptionsSection: React.FC = () => {
           setSelectedCaption(null);
         }}
         onSave={handleSave}
+      />
+      
+      <ImageModal
+        isOpen={isImageModalOpen}
+        onClose={() => setIsImageModalOpen(false)}
+        imageUrl={selectedImageUrl}
+        alt={selectedImageAlt}
       />
     </>
   );

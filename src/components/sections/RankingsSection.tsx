@@ -2,8 +2,9 @@ import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { TrendingUp, Plus, Trash2, ExternalLink } from 'lucide-react';
+import { TrendingUp, Plus, Trash2, ExternalLink, Search } from 'lucide-react';
 import { CreateFromRankingModal } from '@/components/modals/CreateFromRankingModal';
+import { ImageModal } from '@/components/ui/ImageModal';
 import { airtableService, Ranking } from '@/services/airtable';
 import { toast } from '@/components/ui/use-toast';
 
@@ -11,6 +12,9 @@ export const RankingsSection: React.FC = () => {
   const [rankings, setRankings] = useState<Ranking[]>([]);
   const [selectedRanking, setSelectedRanking] = useState<Ranking | null>(null);
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
+  const [isImageModalOpen, setIsImageModalOpen] = useState(false);
+  const [selectedImageUrl, setSelectedImageUrl] = useState<string>('');
+  const [selectedImageAlt, setSelectedImageAlt] = useState<string>('');
 
   useEffect(() => {
     loadRankings();
@@ -55,6 +59,12 @@ export const RankingsSection: React.FC = () => {
     setIsCreateModalOpen(true);
   };
 
+  const handleImageClick = (imageUrl: string, alt: string) => {
+    setSelectedImageUrl(imageUrl);
+    setSelectedImageAlt(alt);
+    setIsImageModalOpen(true);
+  };
+
   return (
     <>
       <Card className="form-container border-form-container-border backdrop-blur-sm">
@@ -85,10 +95,10 @@ export const RankingsSection: React.FC = () => {
                         <img 
                           src={ranking.thumbnailUrl} 
                           alt={`Thumbnail for ${ranking.title}`}
-                          className="w-48 h-48 object-cover rounded-lg border border-form-container-border shadow-sm"
+                          className="w-20 h-20 object-cover rounded-lg border border-form-container-border shadow-sm"
                         />
                       ) : (
-                        <div className="w-48 h-48 bg-gradient-to-br from-purple-100 to-pink-100 border border-form-container-border rounded-lg flex items-center justify-center">
+                        <div className="w-20 h-20 bg-gradient-to-br from-purple-100 to-pink-100 border border-form-container-border rounded-lg flex items-center justify-center">
                           <TrendingUp className="w-8 h-8 text-purple-400" />
                         </div>
                       )}
@@ -131,6 +141,17 @@ export const RankingsSection: React.FC = () => {
                       Stwórz z
                     </Button>
                     
+                    {ranking.thumbnailUrl && (
+                      <Button 
+                        variant="ghost" 
+                        size="icon"
+                        onClick={() => handleImageClick(ranking.thumbnailUrl, `Thumbnail for ${ranking.title}`)}
+                        className="hover:bg-blue-500/10 hover:text-blue-500"
+                        title="Powiększ obraz"
+                      >
+                        <Search className="w-4 h-4" />
+                      </Button>
+                    )}
                     <Button 
                       variant="ghost" 
                       size="icon"
@@ -154,6 +175,13 @@ export const RankingsSection: React.FC = () => {
           setIsCreateModalOpen(false);
           setSelectedRanking(null);
         }}
+      />
+      
+      <ImageModal
+        isOpen={isImageModalOpen}
+        onClose={() => setIsImageModalOpen(false)}
+        imageUrl={selectedImageUrl}
+        alt={selectedImageAlt}
       />
     </>
   );

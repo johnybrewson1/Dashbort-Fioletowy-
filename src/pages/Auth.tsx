@@ -7,7 +7,7 @@ const Auth = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
-  const [isLogin, setIsLogin] = useState(true);
+  const [isLogin, setIsLogin] = useState(true); // Zawsze tylko logowanie
   const navigate = useNavigate();
 
   // Test connection to Supabase
@@ -42,35 +42,28 @@ const Auth = () => {
         data = result.data;
         error = result.error;
       } else {
-        // Rejestracja
-        const result = await supabase.auth.signUp({
-          email,
-          password,
+        // Rejestracja - WYŁĄCZONA
+        toast({
+          title: "Błąd",
+          description: "Rejestracja jest wyłączona. Skontaktuj się z administratorem.",
+          variant: "destructive",
         });
-        data = result.data;
-        error = result.error;
+        setLoading(false);
+        return;
       }
       
       if (error) {
         toast({
-          title: isLogin ? "Błąd logowania" : "Błąd rejestracji",
+          title: "Błąd logowania",
           description: error.message,
           variant: "destructive",
         });
       } else {
-        if (isLogin) {
-          toast({
-            title: "Sukces",
-            description: "Zalogowano pomyślnie!",
-          });
-          navigate('/dashboard');
-        } else {
-          toast({
-            title: "Sukces",
-            description: "Konto zostało utworzone! Sprawdź email w celu potwierdzenia.",
-          });
-          setIsLogin(true); // Przełącz na tryb logowania
-        }
+        toast({
+          title: "Sukces",
+          description: "Zalogowano pomyślnie!",
+        });
+        navigate('/dashboard');
       }
     } catch (error) {
       console.error('Auth error:', error);
@@ -118,19 +111,15 @@ const Auth = () => {
             <div className="inputBx">
               <input
                 type="submit"
-                value={loading ? (isLogin ? 'Logowanie...' : 'Rejestracja...') : (isLogin ? 'Zaloguj się' : 'Zarejestruj się')}
+                value={loading ? 'Logowanie...' : 'Zaloguj się'}
                 disabled={loading}
                 className="w-full px-5 py-3 bg-gradient-to-r from-cyan-500 via-pink-500 to-purple-500 border-none rounded-full text-white text-lg font-semibold cursor-pointer hover:from-cyan-600 hover:via-pink-600 hover:to-purple-600 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
               />
             </div>
             <div className="text-center mt-4">
-              <button
-                type="button"
-                onClick={() => setIsLogin(!isLogin)}
-                className="text-white/75 hover:text-white text-sm underline transition-colors"
-              >
-                {isLogin ? 'Nie masz konta? Zarejestruj się' : 'Masz już konto? Zaloguj się'}
-              </button>
+              <p className="text-white/75 text-sm">
+                Potrzebujesz konta? Skontaktuj się z administratorem.
+              </p>
             </div>
           </form>
         </div>
