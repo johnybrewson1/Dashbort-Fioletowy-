@@ -170,3 +170,4 @@ Po skonfigurowaniu wszystkich elementów, system powinien działać płynnie:
 4. UI aktualizuje się automatycznie
 
 
+

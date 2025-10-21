@@ -78,7 +78,7 @@ export const EditPostModal: React.FC<EditPostModalProps> = ({ post, isOpen, onCl
     setLoadingDescription('AI analizuje Twoje instrukcje i tworzy nowy post.');
     
     try {
-      const response = await fetch(buildApiUrl('/api/jobs'), {
+      const response = await fetch(buildApiUrl('/api/regenerate-post'), {
         method: 'POST',
         headers: { 
           'Content-Type': 'application/json',
@@ -160,7 +160,7 @@ export const EditPostModal: React.FC<EditPostModalProps> = ({ post, isOpen, onCl
     
     setRegeneratingImage(true);
     try {
-      const response = await fetch(buildApiUrl('/api/jobs'), {
+      const response = await fetch(buildApiUrl('/api/regenerate-post'), {
         method: 'POST',
         headers: { 
           'Content-Type': 'application/json',
@@ -237,7 +237,7 @@ export const EditPostModal: React.FC<EditPostModalProps> = ({ post, isOpen, onCl
     setRegeneratingAll(true);
     try {
       // Najpierw regeneruj post
-      const postResponse = await fetch(buildApiUrl('/api/jobs'), {
+      const postResponse = await fetch(buildApiUrl('/api/regenerate-post'), {
         method: 'POST',
         headers: { 
           'Content-Type': 'application/json',
@@ -287,7 +287,7 @@ export const EditPostModal: React.FC<EditPostModalProps> = ({ post, isOpen, onCl
 
       if (postResponse.ok) {
         // Potem regeneruj obraz
-        const imageResponse = await fetch(buildApiUrl('/api/jobs'), {
+        const imageResponse = await fetch(buildApiUrl('/api/regenerate-image'), {
           method: 'POST',
           headers: { 
           'Content-Type': 'application/json',
@@ -378,7 +378,7 @@ export const EditPostModal: React.FC<EditPostModalProps> = ({ post, isOpen, onCl
     setImageInstructionModalOpen(false);
     
     try {
-      const response = await fetch(buildApiUrl('/api/jobs'), {
+      const response = await fetch(buildApiUrl('/api/regenerate-post'), {
         method: 'POST',
         headers: { 
           'Content-Type': 'application/json',
@@ -517,7 +517,7 @@ export const EditPostModal: React.FC<EditPostModalProps> = ({ post, isOpen, onCl
     
     try {
       // Send to webhook first
-      const webhookResponse = await fetch(buildApiUrl('/api/jobs'), {
+      const webhookResponse = await fetch(buildApiUrl('/api/publish'), {
         method: 'POST',
         headers: { 
           'Content-Type': 'application/json',

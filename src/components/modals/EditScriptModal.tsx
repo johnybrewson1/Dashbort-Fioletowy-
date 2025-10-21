@@ -89,7 +89,7 @@ export const EditScriptModal: React.FC<EditScriptModalProps> = ({ script, isOpen
     setLoadingDescription('AI analizuje Twoje instrukcje i tworzy nowy skrypt.');
     
     try {
-      const response = await fetch(buildApiUrl('/api/jobs'), {
+      const response = await fetch(buildApiUrl('/api/regenerate-script'), {
         method: 'POST',
         headers: { 
           'Content-Type': 'application/json',
@@ -149,7 +149,7 @@ export const EditScriptModal: React.FC<EditScriptModalProps> = ({ script, isOpen
     
     setRegenerating(true);
     try {
-      const response = await fetch(buildApiUrl('/api/jobs'), {
+      const response = await fetch(buildApiUrl('/api/regenerate-thumbnail'), {
         method: 'POST',
         headers: { 
           'Content-Type': 'application/json',
@@ -202,7 +202,7 @@ export const EditScriptModal: React.FC<EditScriptModalProps> = ({ script, isOpen
     
     setRegenerating(true);
     try {
-      const response = await fetch(buildApiUrl('/api/jobs'), {
+      const response = await fetch(buildApiUrl('/api/regenerate-script-all'), {
         method: 'POST',
         headers: { 
           'Content-Type': 'application/json',
@@ -323,7 +323,7 @@ export const EditScriptModal: React.FC<EditScriptModalProps> = ({ script, isOpen
     
     try {
       // Send to webhook first
-      const webhookResponse = await fetch(buildApiUrl('/api/jobs'), {
+      const webhookResponse = await fetch(buildApiUrl('/api/publish-script'), {
         method: 'POST',
         headers: { 
           'Content-Type': 'application/json',

@@ -9,6 +9,7 @@ import { ImageModal } from '@/components/ui/ImageModal';
 import { toast } from '@/components/ui/use-toast';
 import { useSettings } from '@/hooks/useSettings';
 import { useSupabaseUser } from '@/hooks/useSupabaseUser';
+import { formatDateTime } from '@/lib/dateUtils';
 import type { Post } from '@/lib/supabase';
 
 export const SupabasePostsSection: React.FC = () => {
@@ -164,6 +165,17 @@ export const SupabasePostsSection: React.FC = () => {
                           <Sparkles className="w-8 h-8 text-blue-400 opacity-60" />
                         </div>
                       )}
+                      
+                      <div className="mt-3 pt-3 border-t border-form-container-border">
+                        <div className="flex items-center justify-between">
+                          <span className="text-xs text-muted-foreground">
+                            Utworzono: {formatDateTime(post.created_at)}
+                          </span>
+                          <Badge variant="outline" className="text-xs">
+                            draft
+                          </Badge>
+                        </div>
+                      </div>
                     </div>
                   </div>
                 </div>

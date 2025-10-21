@@ -129,7 +129,7 @@ export const EditCaptionModal: React.FC<EditCaptionModalProps> = ({ caption, isO
         }
       };
 
-      const response = await fetch(buildApiUrl('/api/jobs'), {
+      const response = await fetch(buildApiUrl('/api/captions'), {
         method: 'POST',
         headers: { 
           'Content-Type': 'application/json',
@@ -189,7 +189,7 @@ export const EditCaptionModal: React.FC<EditCaptionModalProps> = ({ caption, isO
         }
       };
 
-      const response = await fetch(buildApiUrl('/api/jobs'), {
+      const response = await fetch(buildApiUrl('/api/captions'), {
         method: 'POST',
         headers: { 
           'Content-Type': 'application/json',

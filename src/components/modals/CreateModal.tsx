@@ -254,7 +254,7 @@ export const CreateModal: React.FC<CreateModalProps> = ({ isOpen, onClose }) => 
     
     try {
       
-      const response = await fetch(buildApiUrl('/api/jobs'), {
+        const response = await fetch(buildApiUrl('/api/youtube-transcribe'), {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -262,34 +262,11 @@ export const CreateModal: React.FC<CreateModalProps> = ({ isOpen, onClose }) => 
         },
         signal: controller.signal,
         body: JSON.stringify({
-          type: 'youtube_transcribe',
-          user_id: userId || "{{user_id}}",
           youtubeUrl: data.youtubeUrl,
+          selectedPlatforms: selectedPlatforms,
+          selectedContentTypes: selectedContentTypes,
           guidelines: data.guidelines,
-          Post: {
-            instagram: selectedPlatforms.instagram,
-            linkedin: selectedPlatforms.linkedin,
-            x: selectedPlatforms.x,
-            facebook: selectedPlatforms.facebook
-          },
-          Filmy: {
-            "Haczyki": selectedContentTypes.youtube.includes("Haczyki"),
-            "Thumbnail": useThumbnail,
-            "Krótki skrypt": selectedContentTypes.youtube.includes("Krótki skrypt"),
-            "Średni skrypt": selectedContentTypes.youtube.includes("Średni skrypt")
-          },
-          Captions: {
-            "TikTok": selectedContentTypes.tiktok.includes("TikTok"),
-            "YouTube": selectedContentTypes.tiktok.includes("YouTube"),
-            "Instagram": selectedContentTypes.tiktok.includes("Instagram")
-          },
-          thumbnailUrl: useThumbnail ? generateYouTubeThumbnailUrl(data.youtubeUrl) : undefined,
-          voiceForPosts: settings.voiceForPosts,
-          voiceForScripts: settings.voiceForScripts, 
-          style: settings.style,
-          avatarRecipient: settings.avatarRecipient,
-          brandDescription: settings.brandDescription,
-          language: settings.language,
+          user_id: userId
         }),
       });
 

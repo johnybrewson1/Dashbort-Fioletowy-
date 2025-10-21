@@ -130,23 +130,16 @@ export const useMagicAgent = () => {
     try {
       const payload = buildWebhookPayload();
       
-      const response = await fetch(buildApiUrl('/api/jobs'), {
+      const response = await fetch(buildApiUrl('/api/generate'), {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
           'ngrok-skip-browser-warning': 'true',
         },
         body: JSON.stringify({
-          type: 'magic_agent',
           content: content,
-          platform: selectedPlatforms.instagram ? 'instagram' : 
-                   selectedPlatforms.linkedin ? 'linkedin' : 
-                   selectedPlatforms.tiktok ? 'tiktok' : 'linkedin',
-          language: 'pl',
-          brandDescription: 'Testowa marka',
-          avatarRecipient: 'Ogólna publiczność',
-          voiceForPosts: 'Profesjonalny',
-          guidelines: '',
+          selectedPlatforms: selectedPlatforms,
+          selectedContentTypes: selectedContentTypes,
           user_id: userId
         }),
       });

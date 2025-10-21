@@ -8,6 +8,7 @@ import { EditCaptionModal } from '@/components/modals/EditCaptionModal';
 import { ImageModal } from '@/components/ui/ImageModal';
 import { toast } from '@/components/ui/use-toast';
 import { useSettings } from '@/hooks/useSettings';
+import { formatDateTime } from '@/lib/dateUtils';
 import type { Caption } from '@/lib/supabase';
 
 export const CaptionsSection: React.FC = () => {
@@ -161,7 +162,7 @@ export const CaptionsSection: React.FC = () => {
                       
                       <div className="flex items-center justify-between">
                         <span className="text-xs text-muted-foreground">
-                          {new Date(caption.created_at).toLocaleDateString('pl-PL')}
+                          Utworzono: {formatDateTime(caption.created_at)}
                         </span>
                         <Badge variant="outline" className="text-xs">
                           draft

@@ -8,6 +8,7 @@ import { EditScriptModal } from '@/components/modals/EditScriptModal';
 import { ImageModal } from '@/components/ui/ImageModal';
 import { toast } from '@/components/ui/use-toast';
 import { useSettings } from '@/hooks/useSettings';
+import { formatDateTime } from '@/lib/dateUtils';
 import type { Script } from '@/lib/supabase';
 
 export const SupabaseScriptsSection: React.FC = () => {
@@ -179,7 +180,7 @@ export const SupabaseScriptsSection: React.FC = () => {
                       
                       <div className="flex items-center justify-between">
                         <span className="text-xs text-muted-foreground">
-                          {new Date(script.created_at).toLocaleDateString('pl-PL')}
+                          Utworzono: {formatDateTime(script.created_at)}
                         </span>
                         <Badge variant="outline" className="text-xs">
                           draft

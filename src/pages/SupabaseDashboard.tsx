@@ -17,24 +17,41 @@ const SupabaseDashboard = () => {
 
   // Load active section from URL or localStorage on component mount
   useEffect(() => {
-    // First try to get from URL hash
-    const hash = window.location.hash.slice(1); // Remove the # symbol
-    
-    if (hash && ['dashboard', 'posts', 'scripts', 'captions', 'rankings', 'settings'].includes(hash)) {
-      setActiveSection(hash);
-      return;
-    }
+    const updateActiveSection = () => {
+      // First try to get from URL hash
+      const hash = window.location.hash.slice(1); // Remove the # symbol
+      
+      if (hash && ['dashboard', 'posts', 'scripts', 'captions', 'rankings', 'settings'].includes(hash)) {
+        setActiveSection(hash);
+        return;
+      }
 
-    // Fallback to localStorage
-    const savedSection = localStorage.getItem('activeSection');
-    
-    if (savedSection && ['dashboard', 'posts', 'scripts', 'captions', 'rankings', 'settings'].includes(savedSection)) {
-      setActiveSection(savedSection);
-      return;
-    }
+      // Fallback to localStorage
+      const savedSection = localStorage.getItem('activeSection');
+      
+      if (savedSection && ['dashboard', 'posts', 'scripts', 'captions', 'rankings', 'settings'].includes(savedSection)) {
+        setActiveSection(savedSection);
+        return;
+      }
 
-    // Default to dashboard
-    setActiveSection('dashboard');
+      // Default to dashboard
+      setActiveSection('dashboard');
+    };
+
+    // Initial load
+    updateActiveSection();
+
+    // Listen for hash changes
+    const handleHashChange = () => {
+      updateActiveSection();
+    };
+
+    window.addEventListener('hashchange', handleHashChange);
+
+    // Cleanup
+    return () => {
+      window.removeEventListener('hashchange', handleHashChange);
+    };
   }, []);
 
   // Handle section change with URL and localStorage persistence
