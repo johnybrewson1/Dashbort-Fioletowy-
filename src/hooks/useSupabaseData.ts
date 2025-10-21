@@ -27,11 +27,29 @@ export const useSupabasePosts = () => {
         if (response.ok) {
           const data = await response.json();
           console.log('Loaded posts from backend API:', data);
-          setPosts(data);
+          console.log('Data type:', typeof data);
+          console.log('Is array:', Array.isArray(data));
+          
+          // Handle different response formats
+          let postsArray = [];
+          if (Array.isArray(data)) {
+            postsArray = data;
+          } else if (data && Array.isArray(data.posts)) {
+            postsArray = data.posts;
+          } else if (data && Array.isArray(data.data)) {
+            postsArray = data.data;
+          } else if (data && typeof data === 'object') {
+            // Convert object to array if it's a single post
+            postsArray = [data];
+          }
+          
+          console.log('Processed posts array:', postsArray);
+          setPosts(postsArray);
           setError(null);
           return;
         }
       } catch (apiError) {
+        console.log('Backend API error:', apiError);
         console.log('Backend API not available, falling back to Supabase');
       }
       
