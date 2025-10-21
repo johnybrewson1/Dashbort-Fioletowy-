@@ -157,8 +157,16 @@ export const SupabasePostsSection: React.FC = () => {
                             alt={`Thumbnail for ${post.title}`}
                             className="w-full aspect-square object-cover rounded-lg border border-form-container-border shadow-sm hover:shadow-md transition-shadow duration-200 cursor-pointer h-32"
                             onClick={() => handleImageClick(post.image_url, `Thumbnail for ${post.title}`)}
+                            onError={(e) => {
+                              console.log(`Image failed to load: ${post.image_url}`);
+                              e.currentTarget.style.display = 'none';
+                              e.currentTarget.nextElementSibling?.classList.remove('hidden');
+                            }}
                           />
                           <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent rounded-lg opacity-0 group-hover:opacity-100 transition-opacity duration-200" />
+                          <div className="hidden aspect-square bg-gradient-to-br from-blue-100 to-cyan-100 border border-form-container-border rounded-lg flex items-center justify-center h-32">
+                            <Sparkles className="w-8 h-8 text-blue-400 opacity-60" />
+                          </div>
                         </div>
                       ) : (
                         <div className="aspect-square bg-gradient-to-br from-blue-100 to-cyan-100 border border-form-container-border rounded-lg flex items-center justify-center h-32">
