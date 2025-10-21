@@ -16,8 +16,28 @@ export const useSupabasePosts = () => {
       const { data: { user } } = await supabase.auth.getUser();
       console.log('Current user:', user);
       
+      // Try backend API first, fallback to Supabase
+      try {
+        const response = await fetch('https://ricky-endotrophic-therese.ngrok-free.dev/api/content/posts', {
+          headers: {
+            'ngrok-skip-browser-warning': 'true',
+          }
+        });
+        
+        if (response.ok) {
+          const data = await response.json();
+          console.log('Loaded posts from backend API:', data);
+          setPosts(data);
+          setError(null);
+          return;
+        }
+      } catch (apiError) {
+        console.log('Backend API not available, falling back to Supabase');
+      }
+      
+      // Fallback to Supabase
       const data = await postsService.getAll();
-      console.log('Loaded posts:', data);
+      console.log('Loaded posts from Supabase:', data);
       setPosts(data);
       setError(null);
     } catch (err) {

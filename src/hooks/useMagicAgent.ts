@@ -172,6 +172,12 @@ export const useMagicAgent = () => {
         });
         setImageUrl('');
         setBlogPurpose('');
+        
+        // Trigger page refresh to show new posts
+        setTimeout(() => {
+          window.location.reload();
+        }, 1000);
+        
         return true;
       } else {
         throw new Error('Failed to send webhook');
