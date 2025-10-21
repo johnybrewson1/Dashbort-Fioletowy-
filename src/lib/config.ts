@@ -2,7 +2,7 @@
 export const API_CONFIG = {
   // Backend URL - zmień na ngrok URL dla lokalnego testowania
   // lub na produkcyjny URL dla wdrożenia
-  BACKEND_URL: import.meta.env.VITE_BACKEND_URL || 'https://ricky-endotrophic-therese.ngrok-free.dev',
+  BACKEND_URL: import.meta.env.VITE_BACKEND_URL || 'http://localhost:3000',
   
   // Endpoints
   ENDPOINTS: {
