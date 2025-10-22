@@ -16,44 +16,7 @@ export const useSupabasePosts = () => {
       const { data: { user } } = await supabase.auth.getUser();
       console.log('Current user:', user);
       
-      // Try backend API first, fallback to Supabase
-      try {
-        const response = await fetch('https://ricky-endotrophic-therese.ngrok-free.dev/api/content/posts', {
-          headers: {
-            'ngrok-skip-browser-warning': 'true',
-          }
-        });
-        
-        if (response.ok) {
-          const data = await response.json();
-          console.log('Loaded posts from backend API:', data);
-          console.log('Data type:', typeof data);
-          console.log('Is array:', Array.isArray(data));
-          
-          // Handle different response formats
-          let postsArray = [];
-          if (Array.isArray(data)) {
-            postsArray = data;
-          } else if (data && Array.isArray(data.posts)) {
-            postsArray = data.posts;
-          } else if (data && Array.isArray(data.data)) {
-            postsArray = data.data;
-          } else if (data && typeof data === 'object') {
-            // Convert object to array if it's a single post
-            postsArray = [data];
-          }
-          
-          console.log('Processed posts array:', postsArray);
-          setPosts(postsArray);
-          setError(null);
-          return;
-        }
-      } catch (apiError) {
-        console.log('Backend API error:', apiError);
-        console.log('Backend API not available, falling back to Supabase');
-      }
-      
-      // Fallback to Supabase
+      // Load from Supabase (for consistent delete functionality)
       const data = await postsService.getAll();
       console.log('Loaded posts from Supabase:', data);
       setPosts(data);
@@ -99,31 +62,16 @@ export const useSupabasePosts = () => {
 
   const deletePost = async (id: string) => {
     try {
-      // Try backend API first, fallback to Supabase
-      try {
-        const response = await fetch(`https://ricky-endotrophic-therese.ngrok-free.dev/api/content/posts/${id}`, {
-          method: 'DELETE',
-          headers: {
-            'ngrok-skip-browser-warning': 'true',
-          }
-        });
-
-        if (response.ok) {
-          console.log('Post deleted from backend API:', id);
-          setPosts(prev => prev.filter(p => p.id !== id));
-          await analyticsService.logEvent('posts', id, 'deleted');
-          return;
-        }
-      } catch (apiError) {
-        console.log('Backend API delete error:', apiError);
-        console.log('Backend API not available, falling back to Supabase');
-      }
-
-      // Fallback to Supabase
+      console.log('Deleting post from Supabase:', id);
+      
+      // Delete from Supabase (backend API doesn't have DELETE endpoints yet)
       await postsService.delete(id);
       setPosts(prev => prev.filter(p => p.id !== id));
       await analyticsService.logEvent('posts', id, 'deleted');
+      
+      console.log('Post deleted successfully from Supabase:', id);
     } catch (err) {
+      console.error('Error deleting post:', err);
       setError(err instanceof Error ? err.message : 'Failed to delete post');
       throw err;
     }
