@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { toast } from '@/components/ui/use-toast';
 import { LoadingModal } from '@/components/ui/LoadingModal';
@@ -376,6 +376,9 @@ export const CreateModal: React.FC<CreateModalProps> = ({ isOpen, onClose }) => 
           <DialogTitle className="text-2xl font-bold bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
             Stwórz Nową Treść
           </DialogTitle>
+          <DialogDescription className="text-muted-foreground">
+            Wybierz typ treści i platformy, na których chcesz ją opublikować
+          </DialogDescription>
         </DialogHeader>
 
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
