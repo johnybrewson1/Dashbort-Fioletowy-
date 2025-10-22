@@ -221,7 +221,7 @@ export const CreateModal: React.FC<CreateModalProps> = ({ isOpen, onClose }) => 
       return;
     }
 
-    console.log('🚀 Starting YouTube Transcriber...', { data, loadingModalOpen, loadingTitle, userId, timestamp: new Date().toISOString() });
+    console.log('🚀 Starting YouTube Transcriber... VERSION 2.0', { data, loadingModalOpen, loadingTitle, userId, timestamp: new Date().toISOString() });
     
     // Sprawdź czy userId istnieje
     if (!userId) {
@@ -255,7 +255,7 @@ export const CreateModal: React.FC<CreateModalProps> = ({ isOpen, onClose }) => 
       controller.abort();
     }, 300000); // 5 minut timeout
     
-    console.log('⏰ Timeout ustawiony na 5 minut (300000ms)');
+    console.log('⏰ Timeout ustawiony na 5 minut (300000ms) - VERSION 2.0');
     
     try {
       
