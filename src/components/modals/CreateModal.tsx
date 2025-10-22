@@ -221,7 +221,7 @@ export const CreateModal: React.FC<CreateModalProps> = ({ isOpen, onClose }) => 
       return;
     }
 
-    console.log('🚀 Starting YouTube Transcriber...', { data, loadingModalOpen, loadingTitle, userId });
+    console.log('🚀 Starting YouTube Transcriber...', { data, loadingModalOpen, loadingTitle, userId, timestamp: new Date().toISOString() });
     
     // Sprawdź czy userId istnieje
     if (!userId) {
@@ -250,7 +250,12 @@ export const CreateModal: React.FC<CreateModalProps> = ({ isOpen, onClose }) => 
 
     // Dodaj timeout dla requestu (5 minut - backend potrzebuje 2-3 minuty)
     const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 300000); // 5 minut timeout
+    const timeoutId = setTimeout(() => {
+      console.log('⏰ TIMEOUT: 5 minut upłynęło, przerywam request');
+      controller.abort();
+    }, 300000); // 5 minut timeout
+    
+    console.log('⏰ Timeout ustawiony na 5 minut (300000ms)');
     
     try {
       
@@ -259,6 +264,8 @@ export const CreateModal: React.FC<CreateModalProps> = ({ isOpen, onClose }) => 
         headers: {
           'Content-Type': 'application/json',
           'ngrok-skip-browser-warning': 'true',
+          'Cache-Control': 'no-cache',
+          'Pragma': 'no-cache'
         },
         signal: controller.signal,
         body: JSON.stringify({
