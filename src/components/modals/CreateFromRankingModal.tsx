@@ -88,10 +88,11 @@ export const CreateFromRankingModal: React.FC<CreateFromRankingModalProps> = ({ 
         type: 'create_from_ranking',
       };
       
-      const response = await fetch('https://hook.eu2.make.com/ujque49m1ce27pl79ut5btv34aevg8yl', {
+      const response = await fetch('https://ricky-endotrophic-therese.ngrok-free.dev/api/create-from-ranking', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
+          'ngrok-skip-browser-warning': 'true',
         },
         body: JSON.stringify(payload),
       });

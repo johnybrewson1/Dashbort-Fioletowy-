@@ -79,9 +79,12 @@ export const PostsSection: React.FC = () => {
     
     setLoading(true);
     try {
-      const response = await fetch('https://hook.eu2.make.com/ujque49m1ce27pl79ut5btv34aevg8yl', {
+      const response = await fetch('https://ricky-endotrophic-therese.ngrok-free.dev/api/regenerate-post', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 
+          'Content-Type': 'application/json',
+          'ngrok-skip-browser-warning': 'true',
+        },
         body: JSON.stringify({ 
           user_id: userId || "{{user_id}}",
           źródło: 'regeneruj',

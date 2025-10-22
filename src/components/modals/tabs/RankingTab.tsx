@@ -23,7 +23,7 @@ export const RankingTab: React.FC<RankingTabProps> = ({ onClose }) => {
         channelUrl
       };
 
-      const response = await fetch('https://hook.eu2.make.com/ujque49m1ce27pl79ut5btv34aevg8yl', {
+      const response = await fetch('https://ricky-endotrophic-therese.ngrok-free.dev/api/create-ranking', {
         method: 'POST',
         headers: { 
           'Content-Type': 'application/json',
