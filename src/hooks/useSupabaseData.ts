@@ -99,6 +99,27 @@ export const useSupabasePosts = () => {
 
   const deletePost = async (id: string) => {
     try {
+      // Try backend API first, fallback to Supabase
+      try {
+        const response = await fetch(`https://ricky-endotrophic-therese.ngrok-free.dev/api/content/posts/${id}`, {
+          method: 'DELETE',
+          headers: {
+            'ngrok-skip-browser-warning': 'true',
+          }
+        });
+
+        if (response.ok) {
+          console.log('Post deleted from backend API:', id);
+          setPosts(prev => prev.filter(p => p.id !== id));
+          await analyticsService.logEvent('posts', id, 'deleted');
+          return;
+        }
+      } catch (apiError) {
+        console.log('Backend API delete error:', apiError);
+        console.log('Backend API not available, falling back to Supabase');
+      }
+
+      // Fallback to Supabase
       await postsService.delete(id);
       setPosts(prev => prev.filter(p => p.id !== id));
       await analyticsService.logEvent('posts', id, 'deleted');
@@ -181,6 +202,27 @@ export const useSupabaseScripts = () => {
 
   const deleteScript = async (id: string) => {
     try {
+      // Try backend API first, fallback to Supabase
+      try {
+        const response = await fetch(`https://ricky-endotrophic-therese.ngrok-free.dev/api/content/scripts/${id}`, {
+          method: 'DELETE',
+          headers: {
+            'ngrok-skip-browser-warning': 'true',
+          }
+        });
+
+        if (response.ok) {
+          console.log('Script deleted from backend API:', id);
+          setScripts(prev => prev.filter(s => s.id !== id));
+          await analyticsService.logEvent('scripts', id, 'deleted');
+          return;
+        }
+      } catch (apiError) {
+        console.log('Backend API delete error:', apiError);
+        console.log('Backend API not available, falling back to Supabase');
+      }
+
+      // Fallback to Supabase
       await scriptsService.delete(id);
       setScripts(prev => prev.filter(s => s.id !== id));
       await analyticsService.logEvent('scripts', id, 'deleted');
@@ -383,6 +425,27 @@ export const useSupabaseCaptions = () => {
 
   const deleteCaption = async (id: string) => {
     try {
+      // Try backend API first, fallback to Supabase
+      try {
+        const response = await fetch(`https://ricky-endotrophic-therese.ngrok-free.dev/api/content/captions/${id}`, {
+          method: 'DELETE',
+          headers: {
+            'ngrok-skip-browser-warning': 'true',
+          }
+        });
+
+        if (response.ok) {
+          console.log('Caption deleted from backend API:', id);
+          setCaptions(prev => prev.filter(c => c.id !== id));
+          await analyticsService.logEvent('captions', id, 'deleted');
+          return;
+        }
+      } catch (apiError) {
+        console.log('Backend API delete error:', apiError);
+        console.log('Backend API not available, falling back to Supabase');
+      }
+
+      // Fallback to Supabase
       await captionsService.delete(id);
       setCaptions(prev => prev.filter(c => c.id !== id));
       await analyticsService.logEvent('captions', id, 'deleted');
