@@ -293,15 +293,14 @@ export const CreateModal: React.FC<CreateModalProps> = ({ isOpen, onClose }) => 
         } else {
           // Make.com nie zwrócił job_id - prawdopodobnie stary scenariusz
           console.log('⚠️ No job_id received - Make.com scenario needs update');
-          setJobStatus('failed');
-          setErrorMessage('Make.com nie zwrócił ID zadania. Scenariusz wymaga aktualizacji.');
+          console.log('✅ YouTube content submitted successfully without job tracking');
+          setJobStatus('completed');
           setLoadingModalOpen(false);
           
           toast({
-            title: "⚠️ Wymagana aktualizacja",
-            description: "Scenariusz Make.com wymaga aktualizacji aby zwracał job_id. Skontaktuj się z administratorem.",
-            variant: "destructive",
-            duration: 10000,
+            title: "✅ Sukces!",
+            description: "Treść została wysłana do Make.com. Sprawdź posty za kilka minut.",
+            duration: 5000,
           });
         }
       } else {
