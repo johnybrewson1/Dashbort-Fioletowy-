@@ -238,19 +238,19 @@ export const CreateModal: React.FC<CreateModalProps> = ({ isOpen, onClose }) => 
     setJobStatus('submitting');
     setLoading(true);
     setLoadingModalOpen(true);
-    setLoadingTitle('Wysyłanie do Make.com...');
-    setLoadingDescription('Przekazywanie danych do Make.com. To może potrwać do 30 sekund.');
-    console.log('✅ Loading modal should be open now', { loadingModalOpen: true, loadingTitle: 'Wysyłanie do Make.com...', userId });
+    setLoadingTitle('Przetwarzanie YouTube...');
+    setLoadingDescription('Backend przetwarza film YouTube. To może potrwać do 5 minut.');
+    console.log('✅ Loading modal should be open now', { loadingModalOpen: true, loadingTitle: 'Przetwarzanie YouTube...', userId });
     
     // Pokaż toast ładowania
     toast({
-      title: "Wysyłanie do Make.com",
-      description: "Przekazywanie danych do Make.com...",
+      title: "Przetwarzanie YouTube",
+      description: "Backend przetwarza film YouTube. To może potrwać kilka minut...",
     });
 
-    // Dodaj timeout dla requestu
+    // Dodaj timeout dla requestu (5 minut - backend potrzebuje 2-3 minuty)
     const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 30000); // 30 sekund timeout
+    const timeoutId = setTimeout(() => controller.abort(), 300000); // 5 minut timeout
     
     try {
       
@@ -299,7 +299,7 @@ export const CreateModal: React.FC<CreateModalProps> = ({ isOpen, onClose }) => 
           
           toast({
             title: "✅ Sukces!",
-            description: "Treść została wysłana do Make.com. Sprawdź posty za kilka minut.",
+            description: "Treść została wygenerowana przez backend. Sprawdź posty za kilka minut.",
             duration: 5000,
           });
         }
@@ -308,19 +308,19 @@ export const CreateModal: React.FC<CreateModalProps> = ({ isOpen, onClose }) => 
         const errorText = await response.text().catch(() => 'Nieznany błąd');
         console.error('HTTP Error:', response.status, errorText);
         
-        let errorMessage = 'Nie udało się wysłać żądania do Make.com';
+        let errorMessage = 'Nie udało się wysłać żądania do backend API';
         if (response.status === 400) {
-          errorMessage = '🔧 Make.com: Nieprawidłowe dane wejściowe - sprawdź format URL YouTube';
+          errorMessage = '🔧 Backend: Nieprawidłowe dane wejściowe - sprawdź format URL YouTube';
         } else if (response.status === 401) {
-          errorMessage = '🔐 Make.com: Błąd autoryzacji - webhook może być nieaktywny';
+          errorMessage = '🔐 Backend: Błąd autoryzacji - sprawdź konfigurację';
         } else if (response.status === 403) {
-          errorMessage = '🚫 Make.com: Brak uprawnień - scenariusz może być wyłączony';
+          errorMessage = '🚫 Backend: Brak uprawnień - sprawdź dostęp';
         } else if (response.status === 404) {
-          errorMessage = '❌ Make.com: Webhook nie istnieje - sprawdź URL webhook';
+          errorMessage = '❌ Backend: Endpoint nie istnieje - sprawdź URL API';
         } else if (response.status === 429) {
-          errorMessage = '⏳ Make.com: Zbyt wiele żądań - poczekaj chwilę i spróbuj ponownie';
+          errorMessage = '⏳ Backend: Zbyt wiele żądań - poczekaj chwilę i spróbuj ponownie';
         } else if (response.status >= 500) {
-          errorMessage = '🔥 Make.com: Błąd serwera - scenariusz może być przeciążony';
+          errorMessage = '🔥 Backend: Błąd serwera - backend może być przeciążony';
         }
         
         // Zamknij loading modal przed pokazaniem błędu
@@ -339,11 +339,11 @@ export const CreateModal: React.FC<CreateModalProps> = ({ isOpen, onClose }) => 
       let errorMessage = 'Nie udało się przetworzyć YouTube';
       
       if (error instanceof Error && error.name === 'AbortError') {
-        errorMessage = '⏰ Make.com nie odpowiedział w ciągu 30 sekund.\n\n🔍 Możliwe przyczyny:\n• Scenariusz Make.com jest wyłączony\n• Webhook nie działa\n• Make.com jest przeciążony\n\n💡 Sprawdź Make.com lub spróbuj ponownie za 10 minut.';
+        errorMessage = '⏰ Backend nie odpowiedział w ciągu 5 minut.\n\n🔍 Możliwe przyczyny:\n• Backend jest przeciążony\n• YouTube API ma problemy\n• Proces generowania trwa zbyt długo\n\n💡 Spróbuj ponownie za 10 minut.';
       } else if (error instanceof TypeError && error.message.includes('fetch')) {
-        errorMessage = '🌐 Błąd połączenia z Make.com.\n\n🔍 Sprawdź:\n• Połączenie internetowe\n• Czy webhook Make.com jest aktywny\n• Czy URL webhook jest prawidłowy';
+        errorMessage = '🌐 Błąd połączenia z backend API.\n\n🔍 Sprawdź:\n• Połączenie internetowe\n• Czy backend API jest aktywny\n• Czy URL API jest prawidłowy';
       } else if (error instanceof Error) {
-        errorMessage = `❌ Błąd: ${error.message}\n\n💡 Sprawdź Make.com lub spróbuj ponownie.`;
+        errorMessage = `❌ Błąd: ${error.message}\n\n💡 Sprawdź backend API lub spróbuj ponownie.`;
       }
       
       // Set error state
@@ -352,8 +352,8 @@ export const CreateModal: React.FC<CreateModalProps> = ({ isOpen, onClose }) => 
       setLoadingModalOpen(false);
       
       toast({
-        title: "🚨 Problem z Make.com",
-        description: `${getDetailedErrorMessage(error, "przetwarzania YouTube")}\n\n⚠️ WAŻNE: Make.com może mieć błąd w module, ale aplikacja o tym nie wie!\n\n💡 Sprawdź Make.com bezpośrednio lub spróbuj ponownie za 10 minut.`,
+        title: "🚨 Problem z Backend API",
+        description: `${getDetailedErrorMessage(error, "przetwarzania YouTube")}\n\n⚠️ WAŻNE: Backend może mieć błąd w przetwarzaniu, ale aplikacja o tym nie wie!\n\n💡 Sprawdź backend API bezpośrednio lub spróbuj ponownie za 10 minut.`,
         variant: "destructive",
         duration: 20000, // 20 sekund
       });
