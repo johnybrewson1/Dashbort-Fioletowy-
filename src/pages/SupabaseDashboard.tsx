@@ -57,13 +57,17 @@ const SupabaseDashboard = () => {
   // Handle section change with URL and localStorage persistence
   const handleSectionChange = (section: string) => {
     setActiveSection(section);
-    
-    // Update URL hash
-    window.location.hash = section;
-    
-    // Save to localStorage as backup
-    localStorage.setItem('activeSection', section);
   };
+
+  // Sync URL hash and localStorage whenever activeSection changes
+  useEffect(() => {
+    // Update URL hash (idempotent)
+    if (window.location.hash.slice(1) !== activeSection) {
+      window.location.hash = activeSection;
+    }
+    // Persist to localStorage
+    localStorage.setItem('activeSection', activeSection);
+  }, [activeSection]);
 
   const renderMainContent = () => {
     switch (activeSection) {

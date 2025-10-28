@@ -56,7 +56,21 @@ export const SupabaseScriptsSection: React.FC = () => {
   };
 
   const handleImageClick = (imageUrl: string, alt: string) => {
-    setSelectedImageUrl(imageUrl);
+    // Sprawdź czy imageUrl to string, jeśli nie - spróbuj go sparsować
+    let validImageUrl = imageUrl;
+    
+    if (typeof imageUrl !== 'string') {
+      console.error('imageUrl is not a string:', imageUrl);
+      return;
+    }
+    
+    // Sprawdź czy imageUrl nie jest JSON objectem
+    if (imageUrl.startsWith('{') || imageUrl.startsWith('[')) {
+      console.error('imageUrl appears to be JSON object:', imageUrl);
+      return;
+    }
+    
+    setSelectedImageUrl(validImageUrl);
     setSelectedImageAlt(alt);
     setIsImageModalOpen(true);
   };
@@ -132,7 +146,10 @@ export const SupabaseScriptsSection: React.FC = () => {
                             size="icon"
                             onClick={(e) => {
                               e.stopPropagation();
-                              handleImageClick(script.image_url, `Thumbnail for ${script.title}`);
+                              const imageUrl = script.image_url || (script as any).image_url_text || (script as any).thumbnail_url || (script as any).thumbnailUrl || (script as any).imageUrl;
+                              if (imageUrl && typeof imageUrl === 'string' && !imageUrl.startsWith('{') && !imageUrl.startsWith('[')) {
+                                handleImageClick(imageUrl, `Thumbnail for ${script.title}`);
+                              }
                             }}
                             className="hover:bg-blue-500/10 hover:text-blue-500 h-8 w-8"
                             title="Powiększ obraz"
@@ -158,21 +175,32 @@ export const SupabaseScriptsSection: React.FC = () => {
                     <div className="p-3">
                       <h4 className="font-medium text-foreground mb-2 line-clamp-1">{script.title}</h4>
                       
-                      {(script.image_url || (script as any).image_url_text || (script as any).thumbnail_url || (script as any).thumbnailUrl || (script as any).imageUrl) ? (
-                        <div className="mb-3 relative">
-                          <img
-                            src={(script.image_url || (script as any).image_url_text || (script as any).thumbnail_url || (script as any).thumbnailUrl || (script as any).imageUrl) as string}
-                            alt={`Thumbnail for ${script.title}`}
-                            className="w-full aspect-square object-cover rounded-lg border border-form-container-border shadow-sm hover:shadow-md transition-shadow duration-200 cursor-pointer h-32"
-                            onClick={() => handleImageClick((script.image_url || (script as any).image_url_text || (script as any).thumbnail_url || (script as any).thumbnailUrl || (script as any).imageUrl) as string, `Thumbnail for ${script.title}`)}
-                          />
-                          <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent rounded-lg opacity-0 group-hover:opacity-100 transition-opacity duration-200" />
-                        </div>
-                      ) : (
-                        <div className="mb-3 aspect-square bg-gradient-to-br from-green-100 to-emerald-100 border border-form-container-border rounded-lg flex items-center justify-center h-32">
-                          <Code className="w-8 h-8 text-green-400 opacity-60" />
-                        </div>
-                      )}
+                      {(() => {
+                        const imageUrl = script.image_url || (script as any).image_url_text || (script as any).thumbnail_url || (script as any).thumbnailUrl || (script as any).imageUrl;
+                        
+                        // Sprawdź czy imageUrl to prawidłowy string URL
+                        const isValidImageUrl = imageUrl && 
+                          typeof imageUrl === 'string' && 
+                          !imageUrl.startsWith('{') && 
+                          !imageUrl.startsWith('[') &&
+                          (imageUrl.startsWith('http') || imageUrl.startsWith('/'));
+                        
+                        return isValidImageUrl ? (
+                          <div className="mb-3 relative">
+                            <img
+                              src={imageUrl}
+                              alt={`Thumbnail for ${script.title}`}
+                              className="w-full aspect-square object-cover rounded-lg border border-form-container-border shadow-sm hover:shadow-md transition-shadow duration-200 cursor-pointer h-32"
+                              onClick={() => handleImageClick(imageUrl, `Thumbnail for ${script.title}`)}
+                            />
+                            <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent rounded-lg opacity-0 group-hover:opacity-100 transition-opacity duration-200" />
+                          </div>
+                        ) : (
+                          <div className="mb-3 aspect-square bg-gradient-to-br from-green-100 to-emerald-100 border border-form-container-border rounded-lg flex items-center justify-center h-32">
+                            <Code className="w-8 h-8 text-green-400 opacity-60" />
+                          </div>
+                        );
+                      })()}
                       
                       <p className="text-sm text-muted-foreground line-clamp-3 mb-3">
                         {script.content || "Brak treści skryptu"}

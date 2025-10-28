@@ -171,3 +171,5 @@ Po skonfigurowaniu wszystkich elementów, system powinien działać płynnie:
 
 
 
+
+

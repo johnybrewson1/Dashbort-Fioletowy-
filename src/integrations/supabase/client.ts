@@ -2,9 +2,9 @@
 import { createClient } from '@supabase/supabase-js';
 import type { Database } from './types';
 
-const SUPABASE_URL = "https://spimwaixjxkjauikpurc.supabase.co"; // updated project URL
-// IMPORTANT: replace with your project's anon public key from Supabase → API Keys (anon)
-const SUPABASE_PUBLISHABLE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNwaW13YWl4anhramF1aWtwdXJjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTY2NDY1MTEsImV4cCI6MjA3MjIyMjUxMX0.r4rxhbfyAsZLh3hnno8PdqF_0qEJQn8guK_C0l7a0Zk";
+// Use environment variables for production deployment
+const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL || "https://spimwaixjxkjauikpurc.supabase.co";
+const SUPABASE_PUBLISHABLE_KEY = import.meta.env.VITE_SUPABASE_ANON_KEY || "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNwaW13YWl4anhramF1aWtwdXJjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTY2NDY1MTEsImV4cCI6MjA3MjIyMjUxMX0.r4rxhbfyAsZLh3hnno8PdqF_0qEJQn8guK_C0l7a0Zk";
 
 // Import the supabase client like this:
 // import { supabase } from "@/integrations/supabase/client";

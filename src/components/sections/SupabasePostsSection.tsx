@@ -150,29 +150,40 @@ export const SupabasePostsSection: React.FC = () => {
                     <div className="p-3">
                       <h4 className="font-medium text-foreground mb-4 line-clamp-2 text-center">{post.title}</h4>
                       
-                      {post.image_url ? (
-                        <div className="relative">
-                          <img
-                            src={post.image_url}
-                            alt={`Thumbnail for ${post.title}`}
-                            className="w-full aspect-square object-cover rounded-lg border border-form-container-border shadow-sm hover:shadow-md transition-shadow duration-200 cursor-pointer h-32"
-                            onClick={() => handleImageClick(post.image_url, `Thumbnail for ${post.title}`)}
-                            onError={(e) => {
-                              console.log(`Image failed to load: ${post.image_url}`);
-                              e.currentTarget.style.display = 'none';
-                              e.currentTarget.nextElementSibling?.classList.remove('hidden');
-                            }}
-                          />
-                          <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent rounded-lg opacity-0 group-hover:opacity-100 transition-opacity duration-200" />
-                          <div className="hidden aspect-square bg-gradient-to-br from-blue-100 to-cyan-100 border border-form-container-border rounded-lg flex items-center justify-center h-32">
+                      {(() => {
+                        const imageUrl = post.image_url;
+                        
+                        // Sprawdź czy imageUrl to prawidłowy string URL
+                        const isValidImageUrl = imageUrl && 
+                          typeof imageUrl === 'string' && 
+                          !imageUrl.startsWith('{') && 
+                          !imageUrl.startsWith('[') &&
+                          (imageUrl.startsWith('http') || imageUrl.startsWith('/'));
+                        
+                        return isValidImageUrl ? (
+                          <div className="relative">
+                            <img
+                              src={imageUrl}
+                              alt={`Thumbnail for ${post.title}`}
+                              className="w-full aspect-square object-cover rounded-lg border border-form-container-border shadow-sm hover:shadow-md transition-shadow duration-200 cursor-pointer h-32"
+                              onClick={() => handleImageClick(imageUrl, `Thumbnail for ${post.title}`)}
+                              onError={(e) => {
+                                console.log(`Image failed to load: ${imageUrl}`);
+                                e.currentTarget.style.display = 'none';
+                                e.currentTarget.nextElementSibling?.classList.remove('hidden');
+                              }}
+                            />
+                            <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent rounded-lg opacity-0 group-hover:opacity-100 transition-opacity duration-200" />
+                            <div className="hidden aspect-square bg-gradient-to-br from-blue-100 to-cyan-100 border border-form-container-border rounded-lg flex items-center justify-center h-32">
+                              <Sparkles className="w-8 h-8 text-blue-400 opacity-60" />
+                            </div>
+                          </div>
+                        ) : (
+                          <div className="aspect-square bg-gradient-to-br from-blue-100 to-cyan-100 border border-form-container-border rounded-lg flex items-center justify-center h-32">
                             <Sparkles className="w-8 h-8 text-blue-400 opacity-60" />
                           </div>
-                        </div>
-                      ) : (
-                        <div className="aspect-square bg-gradient-to-br from-blue-100 to-cyan-100 border border-form-container-border rounded-lg flex items-center justify-center h-32">
-                          <Sparkles className="w-8 h-8 text-blue-400 opacity-60" />
-                        </div>
-                      )}
+                        );
+                      })()}
                       
                       <div className="mt-3 pt-3 border-t border-form-container-border">
                         <div className="flex items-center justify-between">

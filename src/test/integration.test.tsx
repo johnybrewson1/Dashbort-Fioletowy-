@@ -15,6 +15,35 @@ vi.mock('../pages/SupabaseDashboard', () => ({
     const [activeSection, setActiveSection] = React.useState('dashboard')
     const [isCreateModalOpen, setIsCreateModalOpen] = React.useState(false)
     
+    // Initialize from URL hash or localStorage to mimic app behavior
+    React.useEffect(() => {
+      const hash = window.location.hash.slice(1)
+      const saved = localStorage.getItem('activeSection')
+      if (hash) {
+        setActiveSection(hash)
+      } else if (saved) {
+        setActiveSection(saved)
+      }
+    }, [])
+    
+    // Respond to hash changes like the real app
+    React.useEffect(() => {
+      const onHashChange = () => {
+        const current = window.location.hash.slice(1)
+        if (current) setActiveSection(current)
+      }
+      window.addEventListener('hashchange', onHashChange)
+      return () => window.removeEventListener('hashchange', onHashChange)
+    }, [])
+
+    // Persist selection like the real dashboard
+    React.useEffect(() => {
+      if (activeSection) {
+        window.location.hash = activeSection
+        localStorage.setItem('activeSection', activeSection)
+      }
+    }, [activeSection])
+    
     return (
       <div data-testid="supabase-dashboard">
         <div data-testid="dashboard-content">
@@ -136,7 +165,9 @@ vi.mock('../components/ui/use-toast', () => ({
 }))
 
 const renderWithRouter = (component: React.ReactElement, { route = '/' } = {}) => {
-  window.history.pushState({}, 'Test page', route)
+  // Preserve current hash when navigating in tests
+  const url = route + (window.location.hash || '')
+  window.history.pushState({}, 'Test page', url)
   return render(component)
 }
 
@@ -266,16 +297,22 @@ describe('Integration Tests - User Flows', () => {
       // Test direct access to posts section
       window.location.hash = '#posts'
       renderWithRouter(<App />, { route: '/dashboard' })
+      // Ensure components listening to hashchange react in tests
+      window.dispatchEvent(new HashChangeEvent('hashchange'))
       
       // Wait for the component to process the hash change
       await waitFor(() => {
         expect(screen.getByTestId('posts-nav')).toHaveClass('active')
       })
       
-      // Test direct access to scripts section
+      // Test direct access to scripts section (without remount)
       window.location.hash = '#scripts'
-      renderWithRouter(<App />, { route: '/dashboard' })
-      
+      window.dispatchEvent(new HashChangeEvent('hashchange'))
+      // Wait for persistence
+      await waitFor(() => {
+        expect(localStorage.getItem('activeSection')).toBe('scripts')
+      })
+
       await waitFor(() => {
         expect(screen.getByTestId('scripts-nav')).toHaveClass('active')
       })

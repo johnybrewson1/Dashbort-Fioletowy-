@@ -52,7 +52,10 @@ export const Sidebar: React.FC<SidebarProps> = ({ activeSection, onSectionChange
   };
 
   return (
-    <aside className="fixed left-0 top-0 h-screen w-64 bg-gradient-to-b from-background/95 to-card/95 backdrop-blur-sm border-r border-border/50 z-20">
+    <aside
+      className="fixed left-0 top-0 h-screen w-64 bg-gradient-to-b from-background/95 to-card/95 backdrop-blur-sm border-r border-border/50 z-20"
+      data-testid="sidebar"
+    >
       <div className="p-6 space-y-6">
         {/* Brand Header */}
         <div className="text-center border-b border-border/20 pb-4">
@@ -94,9 +97,17 @@ export const Sidebar: React.FC<SidebarProps> = ({ activeSection, onSectionChange
                 onClick={() => onSectionChange(item.id)}
                 className={`w-full flex items-center space-x-3 px-4 py-3 rounded-lg transition-all duration-200 text-left ${
                   isActive 
-                    ? 'bg-primary/10 text-primary border border-primary/20 shadow-lg' 
+                    ? 'active bg-primary/10 text-primary border border-primary/20 shadow-lg' 
                     : 'hover:bg-card/40 text-muted-foreground hover:text-foreground'
                 }`}
+                data-testid={
+                  item.id === 'dashboard' ? 'dashboard-nav' :
+                  item.id === 'posts' ? 'posts-nav' :
+                  item.id === 'scripts' ? 'scripts-nav' :
+                  item.id === 'captions' ? 'captions-nav' :
+                  item.id === 'rankings' ? 'rankings-nav' :
+                  item.id === 'settings' ? 'settings-nav' : undefined
+                }
               >
                 <Icon className="w-5 h-5" />
                 <span className="font-medium">{item.label}</span>

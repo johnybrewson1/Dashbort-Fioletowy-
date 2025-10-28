@@ -140,21 +140,32 @@ export const CaptionsSection: React.FC = () => {
                     <div className="p-3">
                       <h4 className="font-medium text-foreground mb-2 line-clamp-1">{caption.title}</h4>
                       
-                      {caption.image_url ? (
-                        <div className="mb-3 relative">
-                          <img
-                            src={caption.image_url}
-                            alt={`Thumbnail for ${caption.title}`}
-                            className="w-full aspect-square object-cover rounded-lg border border-form-container-border shadow-sm hover:shadow-md transition-shadow duration-200 cursor-pointer h-32"
-                            onClick={() => handleImageClick(caption.image_url, `Thumbnail for ${caption.title}`)}
-                          />
-                          <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent rounded-lg opacity-0 group-hover:opacity-100 transition-opacity duration-200" />
-                        </div>
-                      ) : (
-                        <div className="mb-3 aspect-square bg-gradient-to-br from-purple-100 to-pink-100 border border-form-container-border rounded-lg flex items-center justify-center h-32">
-                          <MessageSquare className="w-8 h-8 text-purple-400 opacity-60" />
-                        </div>
-                      )}
+                      {(() => {
+                        const imageUrl = caption.image_url;
+                        
+                        // Sprawdź czy imageUrl to prawidłowy string URL
+                        const isValidImageUrl = imageUrl && 
+                          typeof imageUrl === 'string' && 
+                          !imageUrl.startsWith('{') && 
+                          !imageUrl.startsWith('[') &&
+                          (imageUrl.startsWith('http') || imageUrl.startsWith('/'));
+                        
+                        return isValidImageUrl ? (
+                          <div className="mb-3 relative">
+                            <img
+                              src={imageUrl}
+                              alt={`Thumbnail for ${caption.title}`}
+                              className="w-full aspect-square object-cover rounded-lg border border-form-container-border shadow-sm hover:shadow-md transition-shadow duration-200 cursor-pointer h-32"
+                              onClick={() => handleImageClick(imageUrl, `Thumbnail for ${caption.title}`)}
+                            />
+                            <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent rounded-lg opacity-0 group-hover:opacity-100 transition-opacity duration-200" />
+                          </div>
+                        ) : (
+                          <div className="mb-3 aspect-square bg-gradient-to-br from-purple-100 to-pink-100 border border-form-container-border rounded-lg flex items-center justify-center h-32">
+                            <MessageSquare className="w-8 h-8 text-purple-400 opacity-60" />
+                          </div>
+                        );
+                      })()}
                       
                       <p className="text-sm text-muted-foreground line-clamp-3 mb-3">
                         {caption.content || "Brak treści caption"}
